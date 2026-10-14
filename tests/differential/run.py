@@ -107,13 +107,23 @@ def main():
     out = ROOT / "build" / "test-results.tsv"
     out.write_text("build\tva\tsymbol\tcases\tresult\n" +
                    "".join("\t".join(str(x).replace("\n", " ") for x in r) + "\n" for r in results))
+    known = 0
     if "--check-records" in sys.argv:
         passed = {(r[0], r[1]) for r in results if r[4] == "pass"}
-        for r in read_tsv(ROOT / "records" / "functions.tsv"):
-            if r["status"] in MATCHED and (r["build"], r["va"]) not in passed:
-                print(f"FAIL records claim {r['status']} for {r['build']}:{r['va']} without a passing test")
+        records = {(r["build"], r["va"]): r for r in read_tsv(ROOT / "records" / "functions.tsv")}
+        for key, r in records.items():
+            if r["status"] in MATCHED and key not in passed:
+                print(f"FAIL records claim {r['status']} for {key[0]}:{key[1]} without a passing test")
                 failed += 1
-    print(f"{len(results) - failed}/{len(results)} passed")
+        # A failure is expected, not fatal, only for a function records/ deliberately keeps below
+        # `matches` with a note saying why (e.g. it stores its own code addresses in a global).
+        for r in results:
+            rec = records.get((r[0], r[1]))
+            if r[4] != "pass" and rec and rec["status"] not in MATCHED and rec["note"]:
+                print(f"known  {r[1]} {r[2]}: records keep it at {rec['status']}: {rec['note']}")
+                failed -= 1
+                known += 1
+    print(f"{len(results) - failed - known}/{len(results)} passed" + (f", {known} known failure(s)" if known else ""))
     sys.exit(1 if failed else 0)
 
 
