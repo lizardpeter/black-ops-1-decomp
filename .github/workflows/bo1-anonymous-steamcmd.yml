@@ -1,0 +1,47 @@
+name: Test BO1 Mod Tools anonymous SteamCMD
+on:
+  push:
+    branches:
+      - test/bo1-anonymous-modtools-20261014
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/bo1-anonymous-steamcmd.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  anonymous-steamcmd:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Attempt anonymous SteamCMD installation for 42740
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p "$RUNNER_TEMP/bo1-modtools-test"
+          echo "BO1 mod tools app_id=42740; login=anonymous; UTC: $(date -u)"
+          set +e
+          timeout 300s docker run --rm --pull=always \
+            -v "$RUNNER_TEMP/bo1-modtools-test:/home/steam/Steam/bo1-test" \
+            cm2network/steamcmd:latest \
+            +force_install_dir /home/steam/Steam/bo1-test \
+            +login anonymous \
+            +app_update 42740 validate \
+            +quit 2>&1 | tee "$RUNNER_TEMP/bo1-modtools-result.log"
+          result=${PIPESTATUS[0]}
+          set -e
+          echo "SteamCMD process exit code: $result"
+          if grep -qi 'No subscription' "$RUNNER_TEMP/bo1-modtools-result.log"; then
+            echo "ANONYMOUS_ACCESS_RESULT=NO_SUBSCRIPTION"
+          elif grep -Eq "Success! App '42740' fully installed|Success! App '42740'" "$RUNNER_TEMP/bo1-modtools-result.log"; then
+            echo "ANONYMOUS_ACCESS_RESULT=DOWNLOAD_ALLOWED"
+          elif grep -qi "Downloading" "$RUNNER_TEMP/bo1-modtools-result.log"; then
+            echo "ANONYMOUS_ACCESS_RESULT=STARTED_DOWNLOADING"
+          else
+            echo "ANONYMOUS_ACCESS_RESULT=INCONCLUSIVE"
+          fi
+          exit 0
