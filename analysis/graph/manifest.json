@@ -22,7 +22,7 @@
     },
     {
       "file": "t5/functions-CoDMPServer.jsonl",
-      "sha256": "9b2d9453d7f093d7f98fab3854129219f22288b97c5b24a398e9c91d5c10634b",
+      "sha256": "c1c8900aefffceb4be5807e5e679c3b6017aaaf5ff487c8b8a6889f5fe0dd606",
       "rows": 28657,
       "cypher": "UNWIND {{ROWS}} AS r MATCH (b:Build {id:r.build}) MERGE (fn:Function {key:r.key}) SET fn.name = coalesce(fn.name, r.name), fn.symbol = r.symbol MERGE (fi:FunctionInstance {id:r.id}) SET fi.build=r.build, fi.va=r.va, fi.size=r.size, fi.status=r.status, fi.type=r.type, fi.src=r.src, fi.bytes_sha256=r.sha MERGE (fi)-[:INSTANCE_OF]->(fn) MERGE (fi)-[:IN_BUILD]->(b) WITH fn, r WHERE r.source <> '' MATCH (sf:SourceFile {path:r.source}) MERGE (fn)-[d:DEFINED_IN]->(sf) SET d.line=r.line"
     },

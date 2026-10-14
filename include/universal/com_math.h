@@ -20,7 +20,10 @@ struct cplane_s
 extern "C" void *memset(void *dst, int val, unsigned int size);
 extern "C" void *memcpy(void *dst, const void *src, unsigned int size);
 
+extern "C" int rand(void);  // CRT
+
 char *va(const char *format, ...);  // universal/q_shared.cpp
+extern "C" void track_static_alloc_internal(void *ptr, int size, const char *name, int type);  // qcommon/mem_track.cpp
 
 // universal/com_vector.h inlines; the original binary keeps out-of-line copies of these
 void Vec3Copy(const float from[3], float to[3]);
@@ -28,6 +31,7 @@ void Vec3Sub(const float a[3], const float b[3], float out[3]);
 void Vec3Cross(const float v0[3], const float v1[3], float cross[3]);
 int Vec3IsNormalized(const float v[3]);
 float Vec3Length(const float v[3]);
+float Vec3Normalize(float v[3]);
 float Vec2Normalize(float v[2]);
 int Vec4IsNormalized(const float v[4]);
 float Vec4LengthSq(const float v[4]);
@@ -43,6 +47,7 @@ void AngleVectors(const float angles[3], float forward[3], float right[3], float
 
 extern const float vec3_origin[3];          // com_vector4_const.cpp
 extern const float identityMatrix44[4][4];  // public data of com_math.cpp, not reconstructed yet
+extern float bytedirs[162][3];              // public data of com_math.cpp, not reconstructed yet
 
 // ---- inline helpers the original expands in com_math.cpp -------------------------------------------
 
@@ -72,6 +77,13 @@ __forceinline void Vec3Mad(const float start[3], float scale, const float dir[3]
 	result[2] = start[2] + scale * dir[2];
 }
 
+// Exponent-bits test (so it is also true for infinities). The original copies its argument to a stack
+// temporary and tests the bits with and/cmp/setz; it has no MAP entry, so it was a macro or forced inline.
+__forceinline int IS_NAN(float f)
+{
+	return (__builtin_bit_cast(int, f) & 0x7f800000) == 0x7f800000;
+}
+
 // Header helper, always force-inlined (so it has no MAP entry): every function that uses it is flagged
 // "has inline asm" in the PDB and keeps its parameters as stack temporaries. Its name is not recorded anywhere.
 __forceinline void FastSinCos(const float radians, float *s, float *c)
@@ -93,14 +105,36 @@ __forceinline void FastSinCos(const float radians, float *s, float *c)
 
 // ---- com_math.cpp, in original line order ----------------------------------------------------------
 
+void TRACK_com_math();
+float random();
+float crandom();
+void GaussianRandom(float *f0, float *f1);
 int RandWithSeed(int *seed);
+float randomhash(int value);
+void PointInCircleFromUniformDeviates(float radiusDeviate, float yawDeviate, float point[2]);
+float LinearTrack(float tgt, float cur, float rate, float deltaTime);
+float LinearTrackAngle(float tgt, float cur, float rate, float deltaTime);
+float DiffTrack(float tgt, float cur, float rate, float deltaTime);
+float DiffTrackAngle(float tgt, float cur, float rate, float deltaTime);
+float GraphGetValueFromFraction(const int knotCount, const float (*knots)[2], const float fraction);
+float Q_acos(const float c);
 signed char ClampChar(const int i);
 short ClampShort(const int i);
+unsigned char DirToByte(const float dir[3]);
+void ByteToDir(const int b, float dir[3]);
 int VecNCompareCustomEpsilon(const float v0[], const float v1[], float epsilon, int coordCount);
+void Vec3ProjectionCoords(const float dir[3], int *xCoord, int *yCoord);
+void RotatePointAroundVector(float dst[3], const float dir[3], const float point[3], const float degrees);
+void Vec3Basis_RightHanded(const float forward[3], float left[3], float up[3]);
 float vectoyaw(const float vec[2]);
+float vectosignedyaw(const float vec[2]);
+float vectopitch(const float vec[3]);
 void vectoangles(const float vec[3], float angles[3]);
+void UnitQuatToAngles(const float quat[4], float angles[3]);
 void YawVectors(float yaw, float forward[3], float right[3]);
+void YawVectors2D(const float yaw, float forward[2], float right[2]);
 void PerpendicularVector(const float src[3], float dst[3]);
+float PointToLineDistSq(const float point[3], const float start[3], const float end[3]);
 float PointToLineDistSq2D(const float point[2], const float start[2], const float end[2]);
 int BoxInPlanes(const float (*planes)[4], unsigned int numPlanes, const float mins[3], const float maxs[3]);
 int SphereInPlanes(const float (*planes)[4], unsigned int numPlanes, const float center[3], const float radius);

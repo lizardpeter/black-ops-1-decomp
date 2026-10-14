@@ -42,11 +42,189 @@ T5_STATIC float XYZtosRGB[4][4] T5_AT("", "XYZtosRGB") T5_INIT(= {
 
 extern "C" void _CIatan(void);
 
+// 007A7DE0  com_math.cpp:151
+void TRACK_com_math()
+{
+	track_static_alloc_internal(bytedirs, sizeof(bytedirs), "bytedirs", 11);
+}
+
+// 007A7E00  com_math.cpp:158
+X87_MATH float random()
+{
+	return (float)rand() / 32768.0f;  // fild / fdiv, returned in ST0
+}
+
+// 007A7E20  com_math.cpp:163
+X87_MATH float crandom()
+{
+	return random() * 2.0f - 1.0f;  // on the x87 stack straight from random()'s ST0
+}
+
+// 007A7E40  com_math.cpp:168
+void GaussianRandom(float *f0, float *f1)
+{
+	float x;
+	float y;
+	float w;
+
+	iassert_at(173, f0);
+	iassert_at(174, f1);
+	do
+	{
+		x = crandom();
+		y = crandom();
+		w = x * x + y * y;
+	} while (w > 1.0f);
+	w = __builtin_elementwise_sqrt(-2.0f * logf(w) / w);
+	*f0 = x * w;
+	*f1 = y * w;
+}
+
 // 007A7F30  com_math.cpp:190
 int RandWithSeed(int *seed)
 {
 	*seed = 1103515245 * *seed + 12345;
 	return (unsigned int)(*seed / 65536) % 32768;
+}
+
+// 007A7F70  com_math.cpp:197
+X87_MATH float randomhash(int value)
+{
+	return (float)RandWithSeed(&value) / 32768.0f;
+}
+
+// 007A7F90  com_math.cpp:204
+void PointInCircleFromUniformDeviates(float radiusDeviate, float yawDeviate, float point[2])
+{
+	float r;
+	float rSq;
+	float yaw;
+	float sinYaw;
+	float cosYaw;
+
+	rSq = radiusDeviate;
+	r = __builtin_elementwise_sqrt(rSq);
+	yaw = 6.2831855f * yawDeviate;
+	FastSinCos(yaw, &sinYaw, &cosYaw);
+	point[0] = r * cosYaw;
+	point[1] = r * sinYaw;
+}
+
+// The track functions are declared `float`. VC90 returns `cur + step` (and AngleNormalize180's result)
+// from the x87 stack without rounding to float; defining them with a double result under the same
+// decorated name does the same thing, as PitchForYawOnNormal does. Everything else is SSE as in the original.
+double AngleNormalize180_x87(const float angle) __asm__("?AngleNormalize180@@YAMM@Z");
+
+// 007A8010  com_math.cpp:379
+double LinearTrack_x87(float tgt, float cur, float rate, float deltaTime) __asm__("?LinearTrack@@YAMMMMM@Z");
+double LinearTrack_x87(float tgt, float cur, float rate, float deltaTime)
+{
+	float err;
+	float step;
+
+	err = tgt - cur;
+	if (err > 0.0f)
+		step = rate * deltaTime;
+	else
+		step = -rate * deltaTime;
+	if (I_fabs(err) > 0.001f)
+	{
+		if (I_fabs(step) > I_fabs(err))
+			return tgt;
+		return (double)cur + (double)step;  // fld cur / fadd step
+	}
+	return tgt;
+}
+
+// 007A80B0  com_math.cpp:406
+double LinearTrackAngle_x87(float tgt, float cur, float rate, float deltaTime) __asm__("?LinearTrackAngle@@YAMMMMM@Z");
+double LinearTrackAngle_x87(float tgt, float cur, float rate, float deltaTime)
+{
+	float angle;
+
+	while (tgt - cur > 180.0f)
+		tgt = tgt - 360.0f;
+	while (tgt - cur < -180.0f)
+		tgt = tgt + 360.0f;
+	angle = LinearTrack(tgt, cur, rate, deltaTime);
+	return AngleNormalize180_x87(angle);
+}
+
+// 007A8150  com_math.cpp:425
+double DiffTrack_x87(float tgt, float cur, float rate, float deltaTime) __asm__("?DiffTrack@@YAMMMMM@Z");
+double DiffTrack_x87(float tgt, float cur, float rate, float deltaTime)
+{
+	float err;
+	float step;
+
+	err = tgt - cur;
+	step = rate * err * deltaTime;
+	if (I_fabs(err) > 0.001f)
+	{
+		if (I_fabs(step) > I_fabs(err))
+			return tgt;
+		return (double)cur + (double)step;
+	}
+	return tgt;
+}
+
+// 007A81D0  com_math.cpp:448
+double DiffTrackAngle_x87(float tgt, float cur, float rate, float deltaTime) __asm__("?DiffTrackAngle@@YAMMMMM@Z");
+double DiffTrackAngle_x87(float tgt, float cur, float rate, float deltaTime)
+{
+	float angle;
+
+	while (tgt - cur > 180.0f)
+		tgt = tgt - 360.0f;
+	while (tgt - cur < -180.0f)
+		tgt = tgt + 360.0f;
+	angle = DiffTrack(tgt, cur, rate, deltaTime);
+	return AngleNormalize180_x87(angle);
+}
+
+// 007A8270  com_math.cpp:462
+float GraphGetValueFromFraction(const int knotCount, const float (*knots)[2], const float fraction)
+{
+	int knotIndex;
+	float adjustedFrac;
+	float result;
+
+	result = -1.0f;
+	iassert_at(467, knots);
+	vassertp_at(468, knotCount >= 2, "(knotCount) = %i", knotCount);
+	vassertp_at(469, fraction >= 0.0f && fraction <= 1.0f, "(fraction) = %g", fraction);
+	vassertp_at(470, knots[knotCount - 1][0] == 1.0f, "(knots[knotCount - 1][0]) = %g", knots[knotCount - 1][0]);
+
+	for (knotIndex = 1; knotIndex < knotCount; ++knotIndex)
+	{
+		if (knots[knotIndex][0] >= fraction)
+		{
+			adjustedFrac = (fraction - knots[knotIndex - 1][0]) / (knots[knotIndex][0] - knots[knotIndex - 1][0]);
+			vassertp_at(478, adjustedFrac >= 0.0f && adjustedFrac <= 1.0f, "(adjustedFrac) = %g", adjustedFrac);
+			vassertp_at(479, knots[knotIndex - 1][1] >= 0.0f && knots[knotIndex - 1][1] <= 1.0f,
+				"(knots[knotIndex - 1][1]) = %g", knots[knotIndex - 1][1]);
+			vassertp_at(480, knots[knotIndex][1] >= 0.0f && knots[knotIndex][1] <= 1.0f,
+				"(knots[knotIndex][1]) = %g", knots[knotIndex][1]);
+			result = (knots[knotIndex][1] - knots[knotIndex - 1][1]) * adjustedFrac + knots[knotIndex - 1][1];
+			break;
+		}
+	}
+
+	vassertp_at(487, result >= 0.0f && result <= 1.0f, "(result) = %g", result);
+	return result;
+}
+
+// 007A85A0  com_math.cpp:522
+float Q_acos(const float c)
+{
+	float angle;
+
+	angle = acosf(c);
+	if (angle > 3.14159265f)
+		return 3.14159265f;
+	if (angle < -3.14159265f)
+		return 3.14159265f;  // sic: +pi on both sides
+	return angle;
 }
 
 // 007A85F0  com_math.cpp:544
@@ -69,6 +247,48 @@ short ClampShort(const int i)
 	return i;
 }
 
+// 007A8640  com_math.cpp:577
+unsigned char DirToByte(const float dir[3])
+{
+	float bestd;
+	unsigned char i;
+	unsigned char best;
+	float d;
+
+	if (!dir)
+		return 0;
+
+	bestd = 0.0f;
+	best = 0;
+	for (i = 0; i < 162; ++i)
+	{
+		d = dir[0] * bytedirs[i][0] + dir[1] * bytedirs[i][1] + dir[2] * bytedirs[i][2];
+		if (d > bestd)
+		{
+			bestd = d;
+			best = i;
+		}
+	}
+	return best;
+}
+
+// 007A86F0  com_math.cpp:605
+void ByteToDir(const int b, float dir[3])
+{
+	if (b < 0 || b >= 162)
+	{
+		dir[0] = vec3_origin[0];
+		dir[1] = vec3_origin[1];
+		dir[2] = vec3_origin[2];
+	}
+	else
+	{
+		dir[0] = bytedirs[b][0];
+		dir[1] = bytedirs[b][1];
+		dir[2] = bytedirs[b][2];
+	}
+}
+
 // 007A8770  com_math.cpp:616
 int VecNCompareCustomEpsilon(const float v0[], const float v1[], float epsilon, int coordCount)
 {
@@ -80,6 +300,124 @@ int VecNCompareCustomEpsilon(const float v0[], const float v1[], float epsilon, 
 			return 0;
 	}
 	return 1;
+}
+
+// 007A87E0  com_math.cpp:670
+void Vec3ProjectionCoords(const float dir[3], int *xCoord, int *yCoord)
+{
+	float dirSq[3];
+
+	dirSq[0] = dir[0] * dir[0];
+	dirSq[1] = dir[1] * dir[1];
+	dirSq[2] = dir[2] * dir[2];
+	if (dirSq[2] >= dirSq[0] && dirSq[2] >= dirSq[1])
+	{
+		if (dir[2] > 0.0f)
+		{
+			*xCoord = 0;
+			*yCoord = 1;
+		}
+		else
+		{
+			*xCoord = 1;
+			*yCoord = 0;
+		}
+	}
+	else if (dirSq[1] >= dirSq[0] && dirSq[1] >= dirSq[2])
+	{
+		if (dir[1] > 0.0f)
+		{
+			*xCoord = 2;
+			*yCoord = 0;
+		}
+		else
+		{
+			*xCoord = 0;
+			*yCoord = 2;
+		}
+	}
+	else
+	{
+		if (dir[0] > 0.0f)
+		{
+			*xCoord = 1;
+			*yCoord = 2;
+		}
+		else
+		{
+			*xCoord = 2;
+			*yCoord = 1;
+		}
+	}
+}
+
+// 007A8900  com_math.cpp:723
+void RotatePointAroundVector(float dst[3], const float dir[3], const float point[3], const float degrees)
+{
+	float im[3][3];
+	float tmpmat[3][3];
+	int i;
+	float vup[3];
+	float vf[3];
+	float rot[3][3];
+	float zrot[3][3];
+	float vr[3];
+	float rad;
+	float m[3][3];
+
+	iassert_at(733, dir[0] || dir[1] || dir[2]);
+
+	vf[0] = dir[0];
+	vf[1] = dir[1];
+	vf[2] = dir[2];
+
+	PerpendicularVector(dir, vr);
+	Vec3Cross(vr, vf, vup);
+
+	m[0][0] = vr[0];
+	m[1][0] = vr[1];
+	m[2][0] = vr[2];
+
+	m[0][1] = vup[0];
+	m[1][1] = vup[1];
+	m[2][1] = vup[2];
+
+	m[0][2] = vf[0];
+	m[1][2] = vf[1];
+	m[2][2] = vf[2];
+
+	memcpy(im, m, sizeof(im));
+
+	im[0][1] = m[1][0];
+	im[0][2] = m[2][0];
+	im[1][0] = m[0][1];
+	im[1][2] = m[2][1];
+	im[2][0] = m[0][2];
+	im[2][1] = m[1][2];
+
+	memset(zrot, 0, sizeof(zrot));
+	zrot[0][0] = zrot[1][1] = zrot[2][2] = 1.0f;
+
+	rad = degrees * (3.14159265f / 180.0f);
+	iassert_at(768, !IS_NAN(rad));
+	FastSinCos(rad, &zrot[0][1], &zrot[0][0]);
+	iassert_at(772, !IS_NAN(zrot[0][1]));
+	iassert_at(773, !IS_NAN(zrot[0][0]));
+	zrot[1][0] = -zrot[0][1];
+	zrot[1][1] = zrot[0][0];
+
+	MatrixMultiply(m, zrot, tmpmat);
+	MatrixMultiply(tmpmat, im, rot);
+
+	for (i = 0; i < 3; i++)
+		dst[i] = rot[i][0] * point[0] + rot[i][1] * point[1] + rot[i][2] * point[2];
+}
+
+// 007A8D10  com_math.cpp:815
+void Vec3Basis_RightHanded(const float forward[3], float left[3], float up[3])
+{
+	PerpendicularVector(forward, up);
+	Vec3Cross(up, forward, left);
 }
 
 // 007A8D40  com_math.cpp:826
@@ -97,6 +435,183 @@ float vectoyaw(const float vec[2])
 		yaw += yaw < 0.0f ? 360.0f : 0.0f;  // always adds: turns -0 into +0, as the original does
 	}
 	return yaw;
+}
+
+// 007A8E00  com_math.cpp:848
+float vectosignedyaw(const float vec[2])
+{
+	float yaw;
+
+	if (vec[1] == 0.0f && vec[0] == 0.0f)
+	{
+		yaw = 0.0f;
+	}
+	else
+	{
+		yaw = atan2f(vec[1], vec[0]) * 180.0f / 3.14159265f;
+		iassert_at(859, yaw >= -180);
+		iassert_at(860, yaw <= 180);
+	}
+	return yaw;
+}
+
+// 007A8F00  com_math.cpp:872
+float vectopitch(const float vec[3])
+{
+	float pitch;
+	float forward;
+
+	if (vec[1] == 0.0f && vec[0] == 0.0f)
+	{
+		pitch = I_fsel(-vec[2], 90.0f, 270.0f);
+	}
+	else
+	{
+		forward = __builtin_elementwise_sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
+		pitch = atan2f(vec[2], forward) * -180.0f / 3.14159265f;
+		pitch += pitch < 0.0f ? 360.0f : 0.0f;
+	}
+	return pitch;
+}
+
+// 007A9030  com_math.cpp:896
+void vectoangles(const float vec[3], float angles[3])
+{
+	float forward;
+	float yaw;
+	float pitch;
+
+	if (vec[1] == 0.0f && vec[0] == 0.0f)
+	{
+		yaw = 0.0f;
+		pitch = I_fsel(-vec[2], 90.0f, 270.0f);
+	}
+	else
+	{
+		yaw = atan2f(vec[1], vec[0]) * 180.0f / 3.14159265f;
+		yaw += yaw < 0.0f ? 360.0f : 0.0f;
+
+		forward = __builtin_elementwise_sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
+		pitch = atan2f(vec[2], forward) * -180.0f / 3.14159265f;
+		pitch += pitch < 0.0f ? 360.0f : 0.0f;
+	}
+	angles[0] = pitch;
+	angles[1] = yaw;
+	angles[2] = 0.0f;
+}
+
+// 007A9210  com_math.cpp:921
+void UnitQuatToAngles(const float quat[4], float angles[3])
+{
+	float axis[3][3];
+
+	UnitQuatToAxis(quat, axis);
+	AxisToAngles(axis, angles);
+}
+
+// 007A9240  com_math.cpp:934
+void YawVectors(float yaw, float forward[3], float right[3])
+{
+	float sy;
+	float angle;
+	float cy;
+
+	angle = yaw * (3.14159265f / 180.0f);
+	FastSinCos(angle, &sy, &cy);
+	if (forward)
+	{
+		forward[0] = cy;
+		forward[1] = sy;
+		forward[2] = 0.0f;
+	}
+	if (right)
+	{
+		right[0] = sy;
+		right[1] = -cy;
+		right[2] = 0.0f;
+	}
+}
+
+// 007A92E0  com_math.cpp:959
+void YawVectors2D(const float yaw, float forward[2], float right[2])
+{
+	float sy;
+	float angle;
+	float cy;
+
+	angle = yaw * (3.14159265f / 180.0f);
+	FastSinCos(angle, &sy, &cy);
+	if (forward)
+	{
+		forward[0] = cy;
+		forward[1] = sy;
+	}
+	if (right)
+	{
+		right[0] = sy;
+		right[1] = -cy;
+	}
+}
+
+// 007A9360  com_math.cpp:987
+void PerpendicularVector(const float src[3], float dst[3])
+{
+	float srcSq[3];
+	float d;
+	int pos;
+
+	iassertmsg_at(992, Vec3IsNormalized( src ), va("(%g %g %g) len %g", src[0], src[1], src[2], Vec3Length(src)));
+
+	srcSq[0] = src[0] * src[0];
+	srcSq[1] = src[1] * src[1];
+	srcSq[2] = src[2] * src[2];
+	pos = srcSq[0] > srcSq[1];
+	if (srcSq[pos] > srcSq[2])
+		pos = 2;
+
+	d = -src[pos];
+	dst[0] = d * src[0];
+	dst[1] = d * src[1];
+	dst[2] = d * src[2];
+	dst[pos] = dst[pos] + 1.0f;
+	Vec3Normalize(dst);
+}
+
+// 007A94E0  com_math.cpp:1068
+float PointToLineDistSq(const float point[3], const float start[3], const float end[3])
+{
+	float ptToLineDot;
+	float ptToLine[3];
+	float seg[3];
+	float segDot;
+	float perpendicularDelta[3];
+
+	seg[0] = end[0] - start[0];
+	seg[1] = end[1] - start[1];
+	seg[2] = end[2] - start[2];
+	ptToLine[0] = point[0] - start[0];
+	ptToLine[1] = point[1] - start[1];
+	ptToLine[2] = point[2] - start[2];
+	ptToLineDot = ptToLine[0] * seg[0] + ptToLine[1] * seg[1] + ptToLine[2] * seg[2];
+	segDot = seg[0] * seg[0] + seg[1] * seg[1] + seg[2] * seg[2];
+	iassert_at(1082, segDot);
+	Vec3Mad(ptToLine, -(ptToLineDot / segDot), seg, perpendicularDelta);
+	// return Vec3LengthSq(perpendicularDelta);
+	// VC90 evaluates this on the x87 stack and returns it unrounded in ST0, written out as in PointToLineDistSq2D.
+	__asm
+	{
+		fld perpendicularDelta[8]
+		fmul perpendicularDelta[8]
+		fld perpendicularDelta[4]
+		fmul perpendicularDelta[4]
+		fld perpendicularDelta[0]
+		fmul perpendicularDelta[0]
+		faddp st(1), st
+		faddp st(1), st
+		mov esp, ebp
+		pop ebp
+		ret
+	}
 }
 
 // 007A9660  com_math.cpp:1094
