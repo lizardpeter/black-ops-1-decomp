@@ -12,6 +12,7 @@ Writes:
   analysis/<build>/pdb/modules.tsv     one row per compiland: index, obj, primary source file
   analysis/<build>/pdb/functions.tsv   every function the PDB knows: va, size, name, scope, module, source, line, type
   analysis/<build>/pdb/lines.tsv       function start -> (source file, first line) from line tables
+  analysis/<build>/pdb/locals.tsv      parameter/local names and types per function, as Ghidra stack offsets
   analysis/<build>/pdb/raw/*.txt       llvm-pdbutil dumps the tables were parsed from
   analysis/<build>/map/publics.tsv     linker MAP publics: va, name, flags, lib, obj
 """
@@ -145,6 +146,50 @@ def parse_procs(text, mods, va_of):
     return out
 
 
+def parse_locals(text, va_of):
+    """Named stack variables per procedure, converted to Ghidra stack offsets (relative to ESP at entry).
+
+    S_BPREL32 is relative to EBP after `push ebp; mov ebp, esp`, so Ghidra offset = offset - 4.
+    S_REGREL32 on EBP is the same. On EBX it is MSVC's aligned-stack frame (`mov ebx, esp` after
+    `push ebx`): EBX-relative parameters also map with -4, but EBP then points into a realigned
+    frame, so EBP-relative locals of those functions are skipped. ESP-relative records are skipped.
+    """
+    procs, cur = [], None
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        m = re.match(r"\s*\d+ \| (S_GPROC32|S_LPROC32) \[size = \d+\] `(.*)`\s*$", line)
+        if m:
+            a = re.search(r"addr = (\d{4}):(\d+)", lines[i + 1])
+            cur = {"va": va_of(int(a.group(1)), int(a.group(2))), "vars": [], "aligned": False} if a else None
+            if cur:
+                procs.append(cur)
+            continue
+        m = re.match(r"\s*\d+ \| (S_BPREL32|S_REGREL32) \[size = \d+\] `(.*)`\s*$", line)
+        if not (m and cur):
+            continue
+        detail = lines[i + 1]
+        off = re.search(r"offset = (-?\d+)", detail)
+        ty = re.search(r"type = 0x[0-9A-F]+ \((.*)\), (?:register|offset)", detail)
+        reg = re.search(r"register = (\w+)", detail)
+        reg = reg.group(1) if reg else "EBP"
+        if reg == "EBX":
+            cur["aligned"] = True
+        if reg in ("EBP", "EBX") and off:
+            cur["vars"].append((reg, int(off.group(1)) - 4, m.group(2), ty.group(1) if ty else ""))
+    rows = []
+    for p in procs:
+        seen = set()
+        for reg, off, name, ty in p["vars"]:
+            kind = "param" if off > 0 else "local"
+            if p["aligned"] and reg == "EBP":
+                continue
+            if (kind, off) in seen:  # same slot reused by a nested scope: keep the outermost name
+                continue
+            seen.add((kind, off))
+            rows.append([p["va"], kind, off, name, ty])
+    return rows
+
+
 def parse_lines(text, va_of):
     """First line of each line-table block, keyed by its start address."""
     out, src = {}, ""
@@ -227,6 +272,8 @@ def main():
          for m in sorted(mods.values(), key=lambda m: m["index"])])
     tsv(out / "pdb" / "functions.tsv", ["va", "size", "name", "scope", "module", "module_source", "line_source", "line", "type"],
         [[p[0], p[1], p[2], p[3], p[4], p[5], *first_line.get(p[0], ("", "")), p[6]] for p in procs])
+    locals_ = parse_locals(dumps["symbols"], va_of)
+    tsv(out / "pdb" / "locals.tsv", ["va", "kind", "offset", "name", "type"], sorted(locals_, key=lambda r: (r[0], r[1] != "param", abs(r[2]))))
     tsv(out / "pdb" / "lines.tsv", ["va", "source", "line"],
         [[va, s, ln] for va, (s, ln) in sorted(first_line.items())])
 

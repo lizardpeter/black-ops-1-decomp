@@ -10,6 +10,7 @@ on:
       - target.toml
       - tools/ghidra/**
       - tools/fetch_originals.py
+      - tools/pdb/**
       - .github/workflows/ghidra.yml
 
 concurrency:
@@ -47,6 +48,7 @@ jobs:
             -import /tmp/in/${{ matrix.build }}.exe \
             -scriptPath tools/ghidra \
             -preScript PrepPdb.java /tmp/in/${{ matrix.build }}.pdb \
+            -postScript ApplyPdbNames.java "$GITHUB_WORKSPACE/analysis/${{ matrix.build }}/pdb/locals.tsv" \
             -postScript ExportAll.java /tmp/raw \
             -analysisTimeoutPerFile 18000 \
             -log /tmp/raw/analyze.log -scriptlog /tmp/raw/analyze-scripts.log
