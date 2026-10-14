@@ -1,0 +1,4 @@
+role	file	sha256
+exe	CoDMPServer.exe	4e325afa62cd2e1c2cea2af42cfe80282233f2e25706b865a51b3ded0842eff5
+pdb	CoDMPServer.pdb	7f50be8f11a92de89d874402da0f9c09a0878bc6afa738e2d374a9be57cf3de9
+map	CoDMPServer.map	5db41c1bf1dfae52f9f4a17ae674592680c5e5d356865021002378177fffba12

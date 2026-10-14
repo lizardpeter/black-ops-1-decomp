@@ -1,0 +1,29 @@
+# What this repo reverses. Originals are never committed; they live in R2 under these keys
+# and every tool verifies the sha256 before use.
+
+project = "t5"
+title = "Call of Duty: Black Ops (PC) - multiplayer dedicated server"
+graph = "re_t5"
+r2_public = "https://r2.houseofkublai.com/"
+ghidra = "12.1.4"
+compiler = "MSVC 2008 (VC90), x86, /O2 Release DedicatedServer"
+
+# Primary build: full private PDB (24.6k functions with types, line tables, 1,939 compilands).
+[[build]]
+id = "CoDMPServer"
+timestamp = "2010-11-05T18:39:30Z"
+pdb_guid = "022BC206-AF53-479B-BB12-D9FEBB7545E4"
+pdb_age = 65
+exe = { key = "bo1/exes/Call of Duty - Black Ops PC Server/CoDMPServer.exe", sha256 = "4e325afa62cd2e1c2cea2af42cfe80282233f2e25706b865a51b3ded0842eff5" }
+pdb = { key = "bo1/exes/Call of Duty - Black Ops PC Server/CoDMPServer.pdb", sha256 = "7f50be8f11a92de89d874402da0f9c09a0878bc6afa738e2d374a9be57cf3de9" }
+map = { key = "bo1/exes/Call of Duty - Black Ops PC Server/CoDMPServer.map", sha256 = "5db41c1bf1dfae52f9f4a17ae674592680c5e5d356865021002378177fffba12" }
+
+# Later build: PDB keeps types and publics but few private procedures (3.1k). Used for cross-build matching.
+[[build]]
+id = "CoDMPServer_s"
+timestamp = "2011-08-31T23:24:33Z"
+pdb_guid = "8B6610AE-36A8-4B81-85E3-030390C7FD4F"
+pdb_age = 50
+exe = { key = "bo1/exes/Call of Duty - Black Ops PC Server/CoDMPServer_s.exe", sha256 = "3eb933d85baae09726038eaf54aff2c2aa3b3a970749f31ee2f50c46fcc8c7b9" }
+pdb = { key = "bo1/exes/Call of Duty - Black Ops PC Server/CoDMPServer_s.pdb", sha256 = "ae675f4a3afb6b5598301aa81c77a493b1e4b4677364b8f922a9c30e65375c2b" }
+map = { key = "bo1/exes/Call of Duty - Black Ops PC Server/CoDMPServer_s.map", sha256 = "0e7d4eec051330e6d327759dc25ede22fa71ba15c511840642f0ac3ee8b22d7b" }

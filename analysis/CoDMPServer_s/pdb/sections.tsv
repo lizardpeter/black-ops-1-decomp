@@ -1,0 +1,7 @@
+index	name	va	vsize
+1	.text	00401000	599FA3
+2	.rdata	0099B000	120508
+3	.data	00ABC000	455CAC4
+4	.rodata	05019000	770
+5	.tls	0501A000	6D
+6	.rsrc	0501B000	C668
