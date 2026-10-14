@@ -563,28 +563,28 @@ module	obj	lib	source
 561	obj/t5/CoDMPRelease DedicatedServer - PC/UserInfo.obj		DW/UserInfo.cpp
 562	obj/t5/CoDMPRelease DedicatedServer - PC/TeamProfile.obj		DW/TeamProfile.cpp
 563	obj/t5/CoDMPRelease DedicatedServer - PC/MatchRecorder.obj		DW/MatchRecorder.cpp
-564	obj/t5/CoDMPRelease DedicatedServer - PC/MatchMakingResults.obj		Dw/MatchMakingResults.cpp
+564	obj/t5/CoDMPRelease DedicatedServer - PC/MatchMakingResults.obj		DW/MatchMakingResults.cpp
 565	obj/t5/CoDMPRelease DedicatedServer - PC/MatchMakingQueries_win32.obj		DW/win32/MatchMakingQueries_win32.cpp
-566	obj/t5/CoDMPRelease DedicatedServer - PC/MatchMakingQueries.obj		Dw/MatchMakingQueries.cpp
+566	obj/t5/CoDMPRelease DedicatedServer - PC/MatchMakingQueries.obj		DW/MatchMakingQueries.cpp
 567	obj/t5/CoDMPRelease DedicatedServer - PC/MatchMakingInfo_win32.obj		DW/win32/MatchMakingInfo_win32.cpp
-568	obj/t5/CoDMPRelease DedicatedServer - PC/MatchMakingInfo.obj		Dw/MatchMakingInfo.cpp
+568	obj/t5/CoDMPRelease DedicatedServer - PC/MatchMakingInfo.obj		DW/MatchMakingInfo.cpp
 569	obj/t5/CoDMPRelease DedicatedServer - PC/LeaderBoardInfo_win32.obj		DW/win32/LeaderBoardInfo_win32.cpp
-570	obj/t5/CoDMPRelease DedicatedServer - PC/LeaderBoardInfo.obj		Dw/LeaderBoardInfo.cpp
-571	obj/t5/CoDMPRelease DedicatedServer - PC/dwUtils_pc.obj		Dw/dwUtils_pc.cpp
-572	obj/t5/CoDMPRelease DedicatedServer - PC/dwUtils.obj		Dw/dwUtils.cpp
-573	obj/t5/CoDMPRelease DedicatedServer - PC/dwTasks.obj		Dw/dwTasks.cpp
-574	obj/t5/CoDMPRelease DedicatedServer - PC/dwStorage.obj		Dw/dwStorage.cpp
-575	obj/t5/CoDMPRelease DedicatedServer - PC/dwStats.obj		Dw/dwStats.cpp
+570	obj/t5/CoDMPRelease DedicatedServer - PC/LeaderBoardInfo.obj		DW/LeaderBoardInfo.cpp
+571	obj/t5/CoDMPRelease DedicatedServer - PC/dwUtils_pc.obj		DW/dwUtils_pc.cpp
+572	obj/t5/CoDMPRelease DedicatedServer - PC/dwUtils.obj		DW/dwUtils.cpp
+573	obj/t5/CoDMPRelease DedicatedServer - PC/dwTasks.obj		DW/dwTasks.cpp
+574	obj/t5/CoDMPRelease DedicatedServer - PC/dwStorage.obj		DW/dwStorage.cpp
+575	obj/t5/CoDMPRelease DedicatedServer - PC/dwStats.obj		DW/dwStats.cpp
 576	obj/t5/CoDMPRelease DedicatedServer - PC/dwRecordEvent.obj		DW/dwRecordEvent.cpp
-577	obj/t5/CoDMPRelease DedicatedServer - PC/dwQoS.obj		Dw/dwQoS.cpp
+577	obj/t5/CoDMPRelease DedicatedServer - PC/dwQoS.obj		DW/dwQoS.cpp
 578	obj/t5/CoDMPRelease DedicatedServer - PC/dwProfiles_pc.obj		DW/dwProfiles_pc.cpp
-579	obj/t5/CoDMPRelease DedicatedServer - PC/dwNet.obj		Dw/dwNet.cpp
+579	obj/t5/CoDMPRelease DedicatedServer - PC/dwNet.obj		DW/dwNet.cpp
 580	obj/t5/CoDMPRelease DedicatedServer - PC/dwMessaging.obj		DW/dwMessaging.cpp
-581	obj/t5/CoDMPRelease DedicatedServer - PC/dwMatchMaking.obj		Dw/dwMatchMaking.cpp
-582	obj/t5/CoDMPRelease DedicatedServer - PC/dwLogOn_pc.obj		Dw/dwLogOn_pc.cpp
-583	obj/t5/CoDMPRelease DedicatedServer - PC/dwLogOn.obj		Dw/dwLogOn.cpp
-584	obj/t5/CoDMPRelease DedicatedServer - PC/dwFriends_pc.obj		Dw/dwFriends_pc.cpp
-585	obj/t5/CoDMPRelease DedicatedServer - PC/dwFriends.obj		Dw/dwFriends.cpp
+581	obj/t5/CoDMPRelease DedicatedServer - PC/dwMatchMaking.obj		DW/dwMatchMaking.cpp
+582	obj/t5/CoDMPRelease DedicatedServer - PC/dwLogOn_pc.obj		DW/dwLogOn_pc.cpp
+583	obj/t5/CoDMPRelease DedicatedServer - PC/dwLogOn.obj		DW/dwLogOn.cpp
+584	obj/t5/CoDMPRelease DedicatedServer - PC/dwFriends_pc.obj		DW/dwFriends_pc.cpp
+585	obj/t5/CoDMPRelease DedicatedServer - PC/dwFriends.obj		DW/dwFriends.cpp
 586	obj/t5/CoDMPRelease DedicatedServer - PC/devgui_util.obj		devgui/devgui_util.cpp
 587	obj/t5/CoDMPRelease DedicatedServer - PC/devgui_input.obj		devgui/devgui_input.cpp
 588	obj/t5/CoDMPRelease DedicatedServer - PC/devgui.obj		devgui/devgui.cpp
@@ -733,97 +733,97 @@ module	obj	lib	source
 731	obj/t5/CoDMPRelease DedicatedServer - PC/bg_actor_prone.obj		bgame/bg_actor_prone.cpp
 732	obj/t5/CoDMPRelease DedicatedServer - PC/aim_target.obj		aim_assist/aim_target.cpp
 733	obj/t5/CoDMPRelease DedicatedServer - PC/aim_assist.obj		aim_assist/aim_assist.cpp
-734	<external>/./win32/release/vpx/vpx_encoder.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-735	<external>/./win32/release/vpx/vpx_codec.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-736	<external>/./win32/release/vpx/vpx_image.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-737	<external>/./win32/release/vpx/vpx_mem.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-738	<external>/./win32/release/vpx/vpxscale.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-739	<external>/./win32/release/vpx/yv12config.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-740	<external>/./win32/release/vpx/yv12extend.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-741	<external>/./win32/release/vpx/scalesystemdependant.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-742	<external>/./win32/release/vpx/gen_scalers.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-743	<external>/./win32/release/vpx/segmentation_common.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-744	<external>/./win32/release/vpx/alloccommon.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-745	<external>/./win32/release/vpx/blockd.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-746	<external>/./win32/release/vpx/entropy.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-747	<external>/./win32/release/vpx/entropymode.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-748	<external>/./win32/release/vpx/entropymv.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-749	<external>/./win32/release/vpx/extend.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-750	<external>/./win32/release/vpx/filter_c.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-751	<external>/./win32/release/vpx/findnearmv.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-752	<external>/./win32/release/vpx/systemdependent.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-753	<external>/./win32/release/vpx/idctllm.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-754	<external>/./win32/release/vpx/invtrans.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-755	<external>/./win32/release/vpx/loopfilter.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-756	<external>/./win32/release/vpx/loopfilter_filters.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-757	<external>/./win32/release/vpx/mbpitch.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-758	<external>/./win32/release/vpx/modecont.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-759	<external>/./win32/release/vpx/modecontext.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-760	<external>/./win32/release/vpx/quant_common.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-761	<external>/./win32/release/vpx/recon.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-762	<external>/./win32/release/vpx/reconinter.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-763	<external>/./win32/release/vpx/reconintra.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-764	<external>/./win32/release/vpx/reconintra4x4.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-765	<external>/./win32/release/vpx/setupintrarecon.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-766	<external>/./win32/release/vpx/swapyv12buffer.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-767	<external>/./win32/release/vpx/textblit.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-768	<external>/./win32/release/vpx/treecoder.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-769	<external>/./win32/release/vpx/x86_systemdependent.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-770	<external>/./win32/release/vpx/vp8_asm_stubs.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-771	<external>/./win32/release/vpx/loopfilter_x86.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-772	<external>/./win32/release/vpx/postproc.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-773	<external>/./win32/release/vpx/idctllm_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-774	<external>/./win32/release/vpx/iwalsh_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-775	<external>/./win32/release/vpx/recon_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-776	<external>/./win32/release/vpx/subpixel_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-777	<external>/./win32/release/vpx/loopfilter_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-778	<external>/./win32/release/vpx/recon_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-779	<external>/./win32/release/vpx/subpixel_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-780	<external>/./win32/release/vpx/loopfilter_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-781	<external>/./win32/release/vpx/iwalsh_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-782	<external>/./win32/release/vpx/postproc_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-783	<external>/./win32/release/vpx/postproc_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-784	<external>/./win32/release/vpx/vp8_cx_iface.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-785	<external>/./win32/release/vpx/bitstream.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-786	<external>/./win32/release/vpx/boolhuff.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-787	<external>/./win32/release/vpx/dct.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-788	<external>/./win32/release/vpx/encodeframe.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-789	<external>/./win32/release/vpx/encodeintra.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-790	<external>/./win32/release/vpx/encodemb.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-791	<external>/./win32/release/vpx/encodemv.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-792	<external>/./win32/release/vpx/ethreading.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-793	<external>/./win32/release/vpx/firstpass.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-794	<external>/./win32/release/vpx/csystemdependent.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-795	<external>/./win32/release/vpx/mcomp.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-796	<external>/./win32/release/vpx/modecosts.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-797	<external>/./win32/release/vpx/onyx_if.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-798	<external>/./win32/release/vpx/pickinter.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-799	<external>/./win32/release/vpx/picklpf.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-800	<external>/./win32/release/vpx/psnr.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-801	<external>/./win32/release/vpx/quantize.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-802	<external>/./win32/release/vpx/ratectrl.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-803	<external>/./win32/release/vpx/rdopt.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-804	<external>/./win32/release/vpx/sad_c.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-805	<external>/./win32/release/vpx/tokenize.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-806	<external>/./win32/release/vpx/treewriter.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-807	<external>/./win32/release/vpx/variance_c.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-808	<external>/./win32/release/vpx/x86_csystemdependent.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-809	<external>/./win32/release/vpx/variance_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-810	<external>/./win32/release/vpx/variance_impl_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-811	<external>/./win32/release/vpx/sad_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-812	<external>/./win32/release/vpx/dct_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-813	<external>/./win32/release/vpx/subtract_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-814	<external>/./win32/release/vpx/variance_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-815	<external>/./win32/release/vpx/variance_impl_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-816	<external>/./win32/release/vpx/sad_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-817	<external>/./win32/release/vpx/dct_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-818	<external>/./win32/release/vpx/fwalsh_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-819	<external>/./win32/release/vpx/quantize_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-820	<external>/./win32/release/vpx/sad_sse3.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-821	<external>/./win32/release/vpx/sad_ssse3.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-822	<external>/./win32/release/vpx/quantize_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-823	<external>/./win32/release/vpx/encodeopt.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
-824	<external>/./win32/release/vpx/emms.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+734	<external>/./Win32/Release/vpx/vpx_encoder.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+735	<external>/./Win32/Release/vpx/vpx_codec.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+736	<external>/./Win32/Release/vpx/vpx_image.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+737	<external>/./Win32/Release/vpx/vpx_mem.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+738	<external>/./Win32/Release/vpx/vpxscale.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+739	<external>/./Win32/Release/vpx/yv12config.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+740	<external>/./Win32/Release/vpx/yv12extend.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+741	<external>/./Win32/Release/vpx/scalesystemdependant.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+742	<external>/./Win32/Release/vpx/gen_scalers.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+743	<external>/./Win32/Release/vpx/segmentation_common.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+744	<external>/./Win32/Release/vpx/alloccommon.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+745	<external>/./Win32/Release/vpx/blockd.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+746	<external>/./Win32/Release/vpx/entropy.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+747	<external>/./Win32/Release/vpx/entropymode.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+748	<external>/./Win32/Release/vpx/entropymv.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+749	<external>/./Win32/Release/vpx/extend.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+750	<external>/./Win32/Release/vpx/filter_c.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+751	<external>/./Win32/Release/vpx/findnearmv.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+752	<external>/./Win32/Release/vpx/systemdependent.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+753	<external>/./Win32/Release/vpx/idctllm.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+754	<external>/./Win32/Release/vpx/invtrans.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+755	<external>/./Win32/Release/vpx/loopfilter.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+756	<external>/./Win32/Release/vpx/loopfilter_filters.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+757	<external>/./Win32/Release/vpx/mbpitch.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+758	<external>/./Win32/Release/vpx/modecont.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+759	<external>/./Win32/Release/vpx/modecontext.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+760	<external>/./Win32/Release/vpx/quant_common.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+761	<external>/./Win32/Release/vpx/recon.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+762	<external>/./Win32/Release/vpx/reconinter.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+763	<external>/./Win32/Release/vpx/reconintra.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+764	<external>/./Win32/Release/vpx/reconintra4x4.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+765	<external>/./Win32/Release/vpx/setupintrarecon.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+766	<external>/./Win32/Release/vpx/swapyv12buffer.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+767	<external>/./Win32/Release/vpx/textblit.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+768	<external>/./Win32/Release/vpx/treecoder.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+769	<external>/./Win32/Release/vpx/x86_systemdependent.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+770	<external>/./Win32/Release/vpx/vp8_asm_stubs.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+771	<external>/./Win32/Release/vpx/loopfilter_x86.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+772	<external>/./Win32/Release/vpx/postproc.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+773	<external>/./Win32/Release/vpx/idctllm_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+774	<external>/./Win32/Release/vpx/iwalsh_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+775	<external>/./Win32/Release/vpx/recon_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+776	<external>/./Win32/Release/vpx/subpixel_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+777	<external>/./Win32/Release/vpx/loopfilter_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+778	<external>/./Win32/Release/vpx/recon_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+779	<external>/./Win32/Release/vpx/subpixel_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+780	<external>/./Win32/Release/vpx/loopfilter_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+781	<external>/./Win32/Release/vpx/iwalsh_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+782	<external>/./Win32/Release/vpx/postproc_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+783	<external>/./Win32/Release/vpx/postproc_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+784	<external>/./Win32/Release/vpx/vp8_cx_iface.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+785	<external>/./Win32/Release/vpx/bitstream.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+786	<external>/./Win32/Release/vpx/boolhuff.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+787	<external>/./Win32/Release/vpx/dct.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+788	<external>/./Win32/Release/vpx/encodeframe.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+789	<external>/./Win32/Release/vpx/encodeintra.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+790	<external>/./Win32/Release/vpx/encodemb.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+791	<external>/./Win32/Release/vpx/encodemv.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+792	<external>/./Win32/Release/vpx/ethreading.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+793	<external>/./Win32/Release/vpx/firstpass.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+794	<external>/./Win32/Release/vpx/csystemdependent.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+795	<external>/./Win32/Release/vpx/mcomp.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+796	<external>/./Win32/Release/vpx/modecosts.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+797	<external>/./Win32/Release/vpx/onyx_if.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+798	<external>/./Win32/Release/vpx/pickinter.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+799	<external>/./Win32/Release/vpx/picklpf.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+800	<external>/./Win32/Release/vpx/psnr.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+801	<external>/./Win32/Release/vpx/quantize.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+802	<external>/./Win32/Release/vpx/ratectrl.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+803	<external>/./Win32/Release/vpx/rdopt.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+804	<external>/./Win32/Release/vpx/sad_c.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+805	<external>/./Win32/Release/vpx/tokenize.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+806	<external>/./Win32/Release/vpx/treewriter.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+807	<external>/./Win32/Release/vpx/variance_c.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+808	<external>/./Win32/Release/vpx/x86_csystemdependent.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+809	<external>/./Win32/Release/vpx/variance_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+810	<external>/./Win32/Release/vpx/variance_impl_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+811	<external>/./Win32/Release/vpx/sad_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+812	<external>/./Win32/Release/vpx/dct_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+813	<external>/./Win32/Release/vpx/subtract_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+814	<external>/./Win32/Release/vpx/variance_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+815	<external>/./Win32/Release/vpx/variance_impl_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+816	<external>/./Win32/Release/vpx/sad_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+817	<external>/./Win32/Release/vpx/dct_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+818	<external>/./Win32/Release/vpx/fwalsh_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+819	<external>/./Win32/Release/vpx/quantize_sse2.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+820	<external>/./Win32/Release/vpx/sad_sse3.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+821	<external>/./Win32/Release/vpx/sad_ssse3.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+822	<external>/./Win32/Release/vpx/quantize_mmx.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+823	<external>/./Win32/Release/vpx/encodeopt.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
+824	<external>/./Win32/Release/vpx/emms.obj	<external>/projects_pc/cod/codsrc/libs/vpx/lib/Win32/vpxmt.lib	
 825	<external>/./Win32/Static Lib Release/atimgpud.obj	<external>/projects_pc/cod/sdk/ATI/atimgpud_s_x86.lib	
 826	<external>/_out/winxp_x86_release/nvlink_gen.obj	<external>/projects_pc/cod/sdk/nvidia/nvsdk/lib/nvapi.lib	
 827	<external>/Import:steam_api.dll	<external>/projects_pc/cod/sdk/Steamworks/redistributable_bin/steam_api.lib	
@@ -832,8 +832,8 @@ module	obj	lib	source
 830	<external>/WINMM.dll	<external>/Program Files/Microsoft SDKs/Windows/v6.0A/lib/winmm.lib	
 831	<external>/Import:WSOCK32.dll	<external>/Program Files/Microsoft SDKs/Windows/v6.0A/lib/wsock32.lib	
 832	<external>/WSOCK32.dll	<external>/Program Files/Microsoft SDKs/Windows/v6.0A/lib/wsock32.lib	
-833	<external>/Import:binkw32.dll	<external>/projects_pc/cod/sdk/binkw32/binkw32.lib	
-834	<external>/binkw32.dll	<external>/projects_pc/cod/sdk/binkw32/binkw32.lib	
+833	<external>/Import:binkw32.dll	<external>/projects_pc/cod/sdk/BinkW32/binkw32.lib	
+834	<external>/binkw32.dll	<external>/projects_pc/cod/sdk/BinkW32/binkw32.lib	
 835	<external>/Import:d3d9.dll	<external>/projects_pc/cod/sdk/directx_jun10/lib/x86/d3d9.lib	
 836	<external>/d3d9.dll	<external>/projects_pc/cod/sdk/directx_jun10/lib/x86/d3d9.lib	
 837	<external>/Import:d3dx9_43.dll	<external>/projects_pc/cod/sdk/directx_jun10/lib/x86/d3dx9.lib	
@@ -1737,7 +1737,7 @@ module	obj	lib	source
 1735	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/loctim64.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/loctim64.c
 1736	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/mktime64.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mktime64.c
 1737	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/time64.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/time64.c
-1738	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/memcpy.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memcpy.asm
+1738	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/memcpy.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/MEMCPY.ASM
 1739	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/memchr.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memchr.asm
 1740	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/memmove.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memmove.asm
 1741	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/memset.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memset.asm
@@ -1751,7 +1751,7 @@ module	obj	lib	source
 1749	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/_strnicm.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/_strnicm.asm
 1750	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/strpbrk.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strpbrk.asm
 1751	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/strrchr.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strrchr.asm
-1752	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/strspn.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strspn.asm
+1752	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/strspn.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/STRSPN.ASM
 1753	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/strstr.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strstr.asm
 1754	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/lldiv.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/lldiv.asm
 1755	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/lldvrm.obj	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/lib/LIBCMT.lib	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/lldvrm.asm

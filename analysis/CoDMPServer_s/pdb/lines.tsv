@@ -1,5 +1,5 @@
 va	source	line
-004A5980	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/new	63
+004A5980	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/new	63
 007CE450	<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/speex.c	137
 007CE4C0	<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/speex.c	188
 007CE530	<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/speex.c	212
@@ -627,35 +627,35 @@ va	source	line
 0081A220	gfx_d3d/r_bsp_load_obj.cpp	7278
 0081A590	gfx_d3d/r_bsp_load_obj.cpp	7345
 0081A5C0	gfx_d3d/r_bsp_load_obj.cpp	7358
-0081A770	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3244
-0081A8C0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3244
-0081AA10	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3244
-0081AB70	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3185
-0081ADF0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3185
-0081B110	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3185
-0081B440	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3168
-0081B4F0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2190
-0081B560	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2232
-0081B5F0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3123
-0081B6E0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3168
-0081B790	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2190
-0081B810	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2232
-0081B8B0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3123
-0081B9A0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3168
-0081BA60	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2190
-0081BAE0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2232
-0081BB90	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3123
-0081BC90	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3156
-0081BD30	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2108
-0081BDF0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3156
-0081BEC0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2108
-0081BF90	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3156
-0081C060	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2108
-0081C140	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2013
-0081C1C0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2013
-0081C240	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xutility	2685
-0081C2A0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2013
-0081C320	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xutility	2685
+0081A770	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3244
+0081A8C0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3244
+0081AA10	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3244
+0081AB70	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3185
+0081ADF0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3185
+0081B110	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3185
+0081B440	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3168
+0081B4F0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2190
+0081B560	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2232
+0081B5F0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3123
+0081B6E0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3168
+0081B790	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2190
+0081B810	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2232
+0081B8B0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3123
+0081B9A0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3168
+0081BA60	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2190
+0081BAE0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2232
+0081BB90	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3123
+0081BC90	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3156
+0081BD30	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2108
+0081BDF0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3156
+0081BEC0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2108
+0081BF90	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3156
+0081C060	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2108
+0081C140	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2013
+0081C1C0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2013
+0081C240	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xutility	2685
+0081C2A0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2013
+0081C320	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xutility	2685
 0081C380	gfx_d3d/r_shader_constant_set.cpp	70
 0081C3C0	gfx_d3d/r_shader_constant_set.cpp	99
 0081C410	gfx_d3d/r_shader_constant_set.cpp	165
@@ -719,14 +719,14 @@ va	source	line
 0081F160	gfx_d3d/r_stream.cpp	5011
 0081F1C0	gfx_d3d/r_stream.cpp	5023
 0081F270	gfx_d3d/r_stream.cpp	4015
-0081F3C0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3244
-0081F4B0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3185
-0081F6B0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3168
-0081F750	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2190
-0081F790	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2232
-0081F7E0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3123
-0081F8A0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3156
-0081F910	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2108
+0081F3C0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3244
+0081F4B0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3185
+0081F6B0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3168
+0081F750	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2190
+0081F790	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2232
+0081F7E0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3123
+0081F8A0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3156
+0081F910	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2108
 0081F9B0	gfx_d3d/r_cinematic.cpp	677
 0081FA50	gfx_d3d/r_cinematic.cpp	816
 0081FAB0	gfx_d3d/r_cinematic.cpp	875
@@ -1095,9 +1095,9 @@ va	source	line
 00838F10	gfx_d3d/r_material_load_obj.cpp	11090
 00838F50	gfx_d3d/r_material_load_obj.cpp	11223
 00838FB0	gfx_d3d/r_material_load_obj.cpp	11245
-00839000	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2232
-00839050	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3156
-008390B0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2013
+00839000	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2232
+00839050	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3156
+008390B0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2013
 00839100	gfx_d3d/r_drawsurf.cpp	512
 008391A0	gfx_d3d/r_drawsurf.cpp	541
 00839280	gfx_d3d/r_drawsurf.cpp	581
@@ -1362,8 +1362,8 @@ va	source	line
 00851C10	gfx_d3d/r_light.cpp	837
 00851C60	gfx_d3d/r_light.cpp	862
 008525B0	gfx_d3d/r_light.cpp	1257
-00852730	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3244
-00852830	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3123
+00852730	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3244
+00852830	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3123
 008528D0	gfx_d3d/r_draw_method.cpp	12
 00852C90	gfx_d3d/r_draw_method.cpp	196
 00852D10	gfx_d3d/r_draw_method.cpp	223
@@ -1527,20 +1527,20 @@ va	source	line
 00866820	gfx_d3d/r_staticmodelcache_load_obj.cpp	251
 00866840	gfx_d3d/r_staticmodelcache_load_obj.cpp	261
 00866920	gfx_d3d/r_staticmodelcache_load_obj.cpp	312
-00866A00	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3244
-00866AF0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3244
-00866BE0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3185
-00866DB0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3185
-00867040	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3168
-008670E0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2190
-00867120	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3168
-008671C0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2190
-00867220	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2232
-00867290	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3123
-00867390	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2108
-00867400	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	3156
-008674B0	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2108
-00867570	<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm	2013
+00866A00	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3244
+00866AF0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3244
+00866BE0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3185
+00866DB0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3185
+00867040	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3168
+008670E0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2190
+00867120	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3168
+008671C0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2190
+00867220	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2232
+00867290	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3123
+00867390	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2108
+00867400	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	3156
+008674B0	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2108
+00867570	<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm	2013
 00867600	gfx_d3d/r_image_load_common.cpp	82
 008676A0	gfx_d3d/r_image_load_common.cpp	101
 00867770	gfx_d3d/r_image_load_common.cpp	145
@@ -2278,512 +2278,512 @@ va	source	line
 008FD700	<external>/projects_pc/cod/codsrc/tl/physics/include/rigid_body_internal.h	22
 008FD7A0	<external>/projects_pc/cod/codsrc/tl/physics/source/rbc_def_custom.cpp	8
 008FDAC0	<external>/projects_pc/cod/codsrc/tl/physics/source/rbc_def_custom.cpp	126
-0095B2D6	<external>/dd/vctools/crt_bld/self_x86/crt/src/newaop.cpp	6
-0095B2E1	<external>/dd/vctools/crt_bld/self_x86/crt/src/string.cpp	12
-0095B319	<external>/dd/vctools/crt_bld/self_x86/crt/src/string.cpp	17
-0095B360	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/Intel/MEMCPY.ASM	101
+0095B2D6	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/newaop.cpp	6
+0095B2E1	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/string.cpp	12
+0095B319	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/string.cpp	17
+0095B360	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/MEMCPY.ASM	101
 0095B6D0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strstr.asm	45
-0095B756	<external>/dd/vctools/crt_bld/self_x86/crt/src/atox.c	55
-0095B76C	<external>/dd/vctools/crt_bld/self_x86/crt/src/atox.c	99
-0095B777	<external>/dd/vctools/crt_bld/self_x86/crt/src/atox.c	143
-0095B78D	<external>/dd/vctools/crt_bld/self_x86/crt/src/setlocal.h	261
-0095B814	<external>/dd/vctools/crt_bld/self_x86/crt/src/tolower.c	70
-0095B929	<external>/dd/vctools/crt_bld/self_x86/crt/src/tolower.c	143
-0095B955	<external>/dd/vctools/crt_bld/self_x86/crt/src/vsprintf.c	107
-0095BA08	<external>/dd/vctools/crt_bld/self_x86/crt/src/vsprintf.c	187
-0095BA25	<external>/dd/vctools/crt_bld/self_x86/crt/src/atof.c	49
-0095BAD0	<external>/dd/vctools/crt_bld/self_x86/crt/src/atof.c	70
-0095BAF0	<external>/dd/vctools/crt_bld/self_x86/crt/src/qsort.c	395
-0095BB20	<external>/dd/vctools/crt_bld/self_x86/crt/src/qsort.c	342
-0095BBB0	<external>/dd/vctools/crt_bld/self_x86/crt/src/qsort.c	105
-0095BDFD	<external>/dd/vctools/crt_bld/self_x86/crt/src/sprintf.c	99
-0095BE7A	<external>/dd/vctools/crt_bld/self_x86/crt/src/sprintf.c	212
-0095BE98	<external>/dd/vctools/crt_bld/self_x86/crt/src/rand.c	37
-0095BEAA	<external>/dd/vctools/crt_bld/self_x86/crt/src/rand.c	63
+0095B756	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/atox.c	55
+0095B76C	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/atox.c	99
+0095B777	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/atox.c	143
+0095B78D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setlocal.h	261
+0095B814	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tolower.c	70
+0095B929	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tolower.c	143
+0095B955	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c	107
+0095BA08	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c	187
+0095BA25	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/atof.c	49
+0095BAD0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/atof.c	70
+0095BAF0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/qsort.c	395
+0095BB20	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/qsort.c	342
+0095BBB0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/qsort.c	105
+0095BDFD	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sprintf.c	99
+0095BE7A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sprintf.c	212
+0095BE98	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/rand.c	37
+0095BEAA	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/rand.c	63
 0095BED0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strncpy.asm	62
-0095BFF4	<external>/dd/vctools/crt_bld/self_x86/crt/src/purevirt.c	43
-0095C01E	<external>/dd/vctools/crt_bld/self_x86/crt/src/delete.cpp	20
-0095C029	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/typinfo.cpp	49
-0095C05A	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/typinfo.cpp	89
-0095C07A	<external>/dd/vctools/crt_bld/self_x86/crt/src/intel/strncmp.c	42
-0095C13A	<external>/dd/vctools/crt_bld/self_x86/crt/src/bsearch.c	76
-0095C1FC	<external>/dd/vctools/crt_bld/self_x86/crt/src/sprintf.c	99
+0095BFF4	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/purevirt.c	43
+0095C01E	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/delete.cpp	20
+0095C029	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/typinfo.cpp	49
+0095C05A	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/typinfo.cpp	89
+0095C07A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strncmp.c	42
+0095C13A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/bsearch.c	76
+0095C1FC	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sprintf.c	99
 0095C2B0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strncat.asm	64
-0095C3E5	<external>/dd/vctools/crt_bld/self_x86/crt/src/ctime64.c	88
-0095C448	<external>/dd/vctools/crt_bld/self_x86/crt/src/free.c	42
-0095C4D6	<external>/dd/vctools/crt_bld/self_x86/crt/src/time64.c	56
-0095C527	<external>/dd/vctools/crt_bld/self_x86/crt/src/printf.c	49
-0095C5D6	<external>/dd/vctools/crt_bld/self_x86/crt/src/printf.c	167
-0095C5EC	<external>/dd/vctools/crt_bld/self_x86/crt/src/sscanf.c	42
-0095C656	<external>/dd/vctools/crt_bld/self_x86/crt/src/sscanf.c	153
-0095C678	<external>/dd/vctools/crt_bld/self_x86/crt/src/onexit.c	104
-0095C732	<external>/dd/vctools/crt_bld/self_x86/crt/src/onexit.c	205
-0095C763	<external>/dd/vctools/crt_bld/self_x86/crt/src/onexit.c	85
-0095C79F	<external>/dd/vctools/crt_bld/self_x86/crt/src/onexit.c	165
+0095C3E5	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/ctime64.c	88
+0095C448	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/free.c	42
+0095C4D6	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/time64.c	56
+0095C527	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/printf.c	49
+0095C5D6	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/printf.c	167
+0095C5EC	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sscanf.c	42
+0095C656	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sscanf.c	153
+0095C678	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/onexit.c	104
+0095C732	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/onexit.c	205
+0095C763	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/onexit.c	85
+0095C79F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/onexit.c	165
 0095C8E0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strrchr.asm	60
-0095C90D	<external>/dd/vctools/crt_bld/self_x86/crt/src/_ctype.c	57
-0095C963	<external>/dd/vctools/crt_bld/self_x86/crt/src/_ctype.c	66
-0095C993	<external>/dd/vctools/crt_bld/self_x86/crt/src/_ctype.c	129
-0095C9E4	<external>/dd/vctools/crt_bld/self_x86/crt/src/_ctype.c	138
-0095CA12	<external>/dd/vctools/crt_bld/self_x86/crt/src/_ctype.c	153
-0095CA68	<external>/dd/vctools/crt_bld/self_x86/crt/src/_ctype.c	162
-0095CA98	<external>/dd/vctools/crt_bld/self_x86/crt/src/_ctype.c	177
-0095CAE9	<external>/dd/vctools/crt_bld/self_x86/crt/src/_ctype.c	186
-0095CB17	<external>/dd/vctools/crt_bld/self_x86/crt/src/_ctype.c	225
-0095CB6D	<external>/dd/vctools/crt_bld/self_x86/crt/src/_ctype.c	234
+0095C90D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c	57
+0095C963	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c	66
+0095C993	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c	129
+0095C9E4	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c	138
+0095CA12	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c	153
+0095CA68	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c	162
+0095CA98	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c	177
+0095CAE9	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c	186
+0095CB17	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c	225
+0095CB6D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c	234
 0095CBA0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strchr.asm	54
-0095CC6E	<external>/dd/vctools/crt_bld/self_x86/crt/src/toupper.c	73
-0095CD84	<external>/dd/vctools/crt_bld/self_x86/crt/src/toupper.c	149
-0095CDB0	<external>/dd/vctools/crt_bld/self_x86/crt/src/getenv.c	95
-0095CE37	<external>/dd/vctools/crt_bld/self_x86/crt/src/getenv.c	75
-0095CEBA	<external>/dd/vctools/crt_bld/self_x86/crt/src/putenv.c	116
-0095D0CC	<external>/dd/vctools/crt_bld/self_x86/crt/src/putenv.c	72
-0095D111	<external>/dd/vctools/crt_bld/self_x86/crt/src/rename.c	40
-0095D144	<external>/dd/vctools/crt_bld/self_x86/crt/src/unlink.c	41
-0095D174	<external>/dd/vctools/crt_bld/self_x86/crt/src/fopen.c	50
-0095D238	<external>/dd/vctools/crt_bld/self_x86/crt/src/fopen.c	123
-0095D24F	<external>/dd/vctools/crt_bld/self_x86/crt/src/fread.c	127
-0095D459	<external>/dd/vctools/crt_bld/self_x86/crt/src/fread.c	84
-0095D4EF	<external>/dd/vctools/crt_bld/self_x86/crt/src/fread.c	301
-0095D50C	<external>/dd/vctools/crt_bld/self_x86/crt/src/fseek.c	139
-0095D596	<external>/dd/vctools/crt_bld/self_x86/crt/src/fseek.c	97
-0095D61B	<external>/dd/vctools/crt_bld/self_x86/crt/src/fclose.c	86
-0095D692	<external>/dd/vctools/crt_bld/self_x86/crt/src/fclose.c	44
-0095D70E	<external>/dd/vctools/crt_bld/self_x86/crt/src/delete2.cpp	18
-0095D719	<external>/dd/vctools/crt_bld/self_x86/crt/src/vsprintf.c	107
-0095D797	<external>/dd/vctools/crt_bld/self_x86/crt/src/vsprintf.c	172
-0095D7B1	<external>/dd/vctools/crt_bld/self_x86/crt/src/vsprintf.c	394
-0095D808	<external>/dd/vctools/crt_bld/self_x86/crt/src/vsprintf.c	413
-0095D824	<external>/dd/vctools/crt_bld/self_x86/crt/src/malloc.c	27
-0095D873	<external>/dd/vctools/crt_bld/self_x86/crt/src/malloc.c	155
-0095D93D	<external>/dd/vctools/crt_bld/self_x86/crt/src/exception	382
-0095D958	<external>/dd/vctools/crt_bld/self_x86/crt/src/new.cpp	57
-0095D9BD	<external>/dd/vctools/crt_bld/self_x86/crt/src/memmove_s.c	46
-0095DA1A	<external>/dd/vctools/crt_bld/self_x86/crt/src/malloc.h	252
-0095DA3A	<external>/dd/vctools/crt_bld/self_x86/crt/src/strlwr.c	115
-0095DBBD	<external>/dd/vctools/crt_bld/self_x86/crt/src/strlwr.c	202
-0095DBF1	<external>/dd/vctools/crt_bld/self_x86/crt/src/strlwr.c	61
-0095DC56	<external>/dd/vctools/crt_bld/self_x86/crt/src/stricmp.c	75
-0095DC8F	<external>/dd/vctools/crt_bld/self_x86/crt/src/stricmp.c	47
-0095DD64	<external>/dd/vctools/crt_bld/self_x86/crt/src/stricmp.c	94
-0095DDB6	<external>/dd/vctools/crt_bld/self_x86/crt/src/dosmap.c	119
-0095DDF8	<external>/dd/vctools/crt_bld/self_x86/crt/src/dosmap.c	280
-0095DE0B	<external>/dd/vctools/crt_bld/self_x86/crt/src/dosmap.c	293
-0095DE1E	<external>/dd/vctools/crt_bld/self_x86/crt/src/dosmap.c	110
-0095DE41	<external>/dd/vctools/crt_bld/self_x86/crt/src/fwrite.c	99
-0095DFA3	<external>/dd/vctools/crt_bld/self_x86/crt/src/fwrite.c	69
-0095E025	<external>/dd/vctools/crt_bld/self_x86/crt/src/ftell.c	85
-0095E1C2	<external>/dd/vctools/crt_bld/self_x86/crt/src/ftell.c	46
-0095E230	<external>/dd/vctools/crt_bld/self_x86/crt/src/_file.c	53
-0095E236	<external>/dd/vctools/crt_bld/self_x86/crt/src/_file.c	113
-0095E2E7	<external>/dd/vctools/crt_bld/self_x86/crt/src/_file.c	191
-0095E307	<external>/dd/vctools/crt_bld/self_x86/crt/src/_file.c	221
-0095E348	<external>/dd/vctools/crt_bld/self_x86/crt/src/_file.c	264
-0095E37A	<external>/dd/vctools/crt_bld/self_x86/crt/src/_file.c	306
-0095E3B6	<external>/dd/vctools/crt_bld/self_x86/crt/src/_file.c	349
-0095E3E5	<external>/dd/vctools/crt_bld/self_x86/crt/src/fflush.c	142
-0095E44D	<external>/dd/vctools/crt_bld/self_x86/crt/src/fflush.c	98
-0095E495	<external>/dd/vctools/crt_bld/self_x86/crt/src/fflush.c	228
-0095E56F	<external>/dd/vctools/crt_bld/self_x86/crt/src/fflush.c	57
-0095E5C2	<external>/dd/vctools/crt_bld/self_x86/crt/src/fflush.c	193
-0095E5CB	<external>/dd/vctools/crt_bld/self_x86/crt/src/fprintf.c	49
-0095E6E7	<external>/dd/vctools/crt_bld/self_x86/crt/src/asctime.c	71
-0095E8B5	<external>/dd/vctools/crt_bld/self_x86/crt/src/asctime.c	190
-0095E9B5	<external>/dd/vctools/crt_bld/self_x86/crt/src/loctim64.c	62
-0095EC6D	<external>/dd/vctools/crt_bld/self_x86/crt/src/loctim64.c	234
-0095EC94	<external>/dd/vctools/crt_bld/self_x86/crt/src/xtoa.c	93
-0095ECD8	<external>/dd/vctools/crt_bld/self_x86/crt/src/xtoa.c	235
-0095ED02	<external>/dd/vctools/crt_bld/self_x86/crt/src/xtoa.c	309
-0095ED71	<external>/dd/vctools/crt_bld/self_x86/crt/src/xtoa.c	446
-0095ED8E	<external>/dd/vctools/crt_bld/self_x86/crt/src/strtoq.c	80
-0095F025	<external>/dd/vctools/crt_bld/self_x86/crt/src/strtoq.c	211
-0095F050	<external>/dd/vctools/crt_bld/self_x86/crt/src/strtoq.c	236
-0095F07C	<external>/dd/vctools/crt_bld/self_x86/crt/src/fgets.c	49
-0095F1C4	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/stdexcpt.cpp	68
-0095F1D5	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/stdexcpt.cpp	77
-0095F228	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/stdexcpt.cpp	98
-0095F245	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/stdexcpt.cpp	107
-0095F2A2	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/stdexcpt.cpp	167
-0095F2B8	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/stdexcpt.cpp	180
+0095CC6E	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/toupper.c	73
+0095CD84	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/toupper.c	149
+0095CDB0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/getenv.c	95
+0095CE37	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/getenv.c	75
+0095CEBA	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/putenv.c	116
+0095D0CC	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/putenv.c	72
+0095D111	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/rename.c	40
+0095D144	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/unlink.c	41
+0095D174	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fopen.c	50
+0095D238	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fopen.c	123
+0095D24F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fread.c	127
+0095D459	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fread.c	84
+0095D4EF	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fread.c	301
+0095D50C	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fseek.c	139
+0095D596	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fseek.c	97
+0095D61B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fclose.c	86
+0095D692	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fclose.c	44
+0095D70E	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/delete2.cpp	18
+0095D719	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c	107
+0095D797	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c	172
+0095D7B1	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c	394
+0095D808	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c	413
+0095D824	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/malloc.c	27
+0095D873	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/malloc.c	155
+0095D93D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/exception	382
+0095D958	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/new.cpp	57
+0095D9BD	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/memmove_s.c	46
+0095DA1A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/malloc.h	252
+0095DA3A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strlwr.c	115
+0095DBBD	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strlwr.c	202
+0095DBF1	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strlwr.c	61
+0095DC56	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stricmp.c	75
+0095DC8F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stricmp.c	47
+0095DD64	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stricmp.c	94
+0095DDB6	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/dosmap.c	119
+0095DDF8	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/dosmap.c	280
+0095DE0B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/dosmap.c	293
+0095DE1E	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/dosmap.c	110
+0095DE41	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fwrite.c	99
+0095DFA3	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fwrite.c	69
+0095E025	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/ftell.c	85
+0095E1C2	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/ftell.c	46
+0095E230	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_file.c	53
+0095E236	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_file.c	113
+0095E2E7	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_file.c	191
+0095E307	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_file.c	221
+0095E348	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_file.c	264
+0095E37A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_file.c	306
+0095E3B6	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_file.c	349
+0095E3E5	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fflush.c	142
+0095E44D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fflush.c	98
+0095E495	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fflush.c	228
+0095E56F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fflush.c	57
+0095E5C2	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fflush.c	193
+0095E5CB	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fprintf.c	49
+0095E6E7	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/asctime.c	71
+0095E8B5	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/asctime.c	190
+0095E9B5	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/loctim64.c	62
+0095EC6D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/loctim64.c	234
+0095EC94	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/xtoa.c	93
+0095ECD8	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/xtoa.c	235
+0095ED02	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/xtoa.c	309
+0095ED71	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/xtoa.c	446
+0095ED8E	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strtoq.c	80
+0095F025	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strtoq.c	211
+0095F050	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strtoq.c	236
+0095F07C	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fgets.c	49
+0095F1C4	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/stdexcpt.cpp	68
+0095F1D5	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/stdexcpt.cpp	77
+0095F228	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/stdexcpt.cpp	98
+0095F245	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/stdexcpt.cpp	107
+0095F2A2	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/stdexcpt.cpp	167
+0095F2B8	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/stdexcpt.cpp	180
 0095F2F0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memchr.asm	56
-0095F39D	<external>/dd/vctools/crt_bld/self_x86/crt/src/invarg.c	64
-0095F3AC	<external>/dd/vctools/crt_bld/self_x86/crt/src/invarg.c	137
-0095F4D4	<external>/dd/vctools/crt_bld/self_x86/crt/src/invarg.c	96
-0095F4FA	<external>/dd/vctools/crt_bld/self_x86/crt/src/invarg.c	124
-0095F50A	<external>/dd/vctools/crt_bld/self_x86/crt/src/strtok.c	67
-0095F5CB	<external>/dd/vctools/crt_bld/self_x86/crt/src/memcpy_s.c	47
-0095F648	<external>/dd/vctools/crt_bld/self_x86/crt/src/gmtime64.c	48
-0095F88B	<external>/dd/vctools/crt_bld/self_x86/crt/src/gmtime64.c	162
-0095F8B2	<external>/dd/vctools/crt_bld/self_x86/crt/src/strdup.c	66
-0095F907	<external>/dd/vctools/crt_bld/self_x86/crt/src/findf64.c	228
-0095F96F	<external>/dd/vctools/crt_bld/self_x86/crt/src/findf64.c	74
-0095FA9F	<external>/dd/vctools/crt_bld/self_x86/crt/src/findf64.c	157
-0095FBCE	<external>/dd/vctools/crt_bld/self_x86/crt/src/findfile.c	221
-0095FBF4	<external>/dd/vctools/crt_bld/self_x86/crt/src/mkdir.c	37
-0095FC26	<external>/dd/vctools/crt_bld/self_x86/crt/src/getcwd.c	332
-0095FC5F	<external>/dd/vctools/crt_bld/self_x86/crt/src/getcwd.c	221
-0095FD96	<external>/dd/vctools/crt_bld/self_x86/crt/src/getcwd.c	70
-0095FDDF	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	156
-0095FE0F	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	460
-0095FE38	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	698
-0095FE63	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	721
-0095FE7B	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	781
-0095FE84	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	807
-0095FE8D	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	889
-0095FEAA	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	938
-0095FECE	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	277
-0095FF53	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	513
-0096007F	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	411
-00960095	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	419
-009600AB	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	426
-009600BA	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	433
-009600C9	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0dat.c	834
-00960117	<external>/dd/vctools/crt_bld/self_x86/crt/src/threadex.c	382
-00960154	<external>/dd/vctools/crt_bld/self_x86/crt/src/threadex.c	335
-00960195	<external>/dd/vctools/crt_bld/self_x86/crt/src/threadex.c	260
-00960218	<external>/dd/vctools/crt_bld/self_x86/crt/src/threadex.c	154
-009602C8	<external>/dd/vctools/crt_bld/self_x86/crt/src/calloc.c	48
-00960308	<external>/dd/vctools/crt_bld/self_x86/crt/src/chmod.c	43
-00960377	<external>/dd/vctools/crt_bld/self_x86/crt/src/realloc.c	64
-009606C1	<external>/dd/vctools/crt_bld/self_x86/crt/src/strtol.c	80
-009608F0	<external>/dd/vctools/crt_bld/self_x86/crt/src/strtol.c	229
-0096091B	<external>/dd/vctools/crt_bld/self_x86/crt/src/strtol.c	255
-00960947	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0.c	314
-00960970	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0.c	189
-00960AEE	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0.c	172
-00960B00	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memcpy.asm	101
+0095F39D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/invarg.c	64
+0095F3AC	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/invarg.c	137
+0095F4D4	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/invarg.c	96
+0095F4FA	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/invarg.c	124
+0095F50A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strtok.c	67
+0095F5CB	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/memcpy_s.c	47
+0095F648	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/gmtime64.c	48
+0095F88B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/gmtime64.c	162
+0095F8B2	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strdup.c	66
+0095F907	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/findf64.c	228
+0095F96F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/findf64.c	74
+0095FA9F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/findf64.c	157
+0095FBCE	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/findfile.c	221
+0095FBF4	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mkdir.c	37
+0095FC26	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/getcwd.c	332
+0095FC5F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/getcwd.c	221
+0095FD96	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/getcwd.c	70
+0095FDDF	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	156
+0095FE0F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	460
+0095FE38	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	698
+0095FE63	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	721
+0095FE7B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	781
+0095FE84	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	807
+0095FE8D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	889
+0095FEAA	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	938
+0095FECE	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	277
+0095FF53	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	513
+0096007F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	411
+00960095	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	419
+009600AB	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	426
+009600BA	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	433
+009600C9	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c	834
+00960117	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/threadex.c	382
+00960154	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/threadex.c	335
+00960195	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/threadex.c	260
+00960218	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/threadex.c	154
+009602C8	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/calloc.c	48
+00960308	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/chmod.c	43
+00960377	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/realloc.c	64
+009606C1	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strtol.c	80
+009608F0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strtol.c	229
+0096091B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strtol.c	255
+00960947	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0.c	314
+00960970	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0.c	189
+00960AEE	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0.c	172
+00960B00	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/MEMCPY.ASM	101
 00960E70	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memset.asm	59
-00960EEA	<external>/dd/vctools/crt_bld/self_x86/crt/src/winxfltr.c	105
+00960EEA	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winxfltr.c	105
 00960F70	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/ftol2.asm	38
 00961020	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/ulldiv.asm	44
 00961090	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/llmul.asm	47
-009610C4	<external>/dd/vctools/crt_bld/self_x86/crt/src/intel/secchk.c	52
+009610C4	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/secchk.c	52
 009610E0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/lldiv.asm	44
-0096188B	<external>/dd/vctools/crt_bld/self_x86/crt/src/align.c	99
-00961939	<external>/dd/vctools/crt_bld/self_x86/crt/src/align.c	457
-00961953	<external>/dd/vctools/crt_bld/self_x86/crt/src/align.c	68
-0096196A	<external>/dd/vctools/crt_bld/self_x86/crt/src/align.c	236
-00961AEF	<external>/dd/vctools/crt_bld/self_x86/crt/src/align.c	158
+0096188B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/align.c	99
+00961939	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/align.c	457
+00961953	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/align.c	68
+0096196A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/align.c	236
+00961AEF	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/align.c	158
 00961CA0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/llshl.asm	42
-00961CC0	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/i386/trnsctrl.cpp	77
-00961CF2	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/i386/trnsctrl.cpp	118
-00961CF9	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/i386/trnsctrl.cpp	218
-00961D4D	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/i386/trnsctrl.cpp	341
-00961D83	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/i386/trnsctrl.cpp	545
-00961DB6	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/i386/trnsctrl.cpp	637
-00961E8D	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/i386/trnsctrl.cpp	770
-00961F2C	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/i386/trnsctrl.cpp	848
-00961FA1	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/i386/trnsctrl.cpp	889
-00961FCD	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/i386/trnsctrl.cpp	907
-00961FF4	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/i386/trnsctrl.cpp	926
-00962046	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/i386/trnsctrl.cpp	485
+00961CC0	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp	77
+00961CF2	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp	118
+00961CF9	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp	218
+00961D4D	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp	341
+00961D83	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp	545
+00961DB6	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp	637
+00961E8D	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp	770
+00961F2C	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp	848
+00961FA1	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp	889
+00961FCD	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp	907
+00961FF4	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp	926
+00962046	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp	485
 00962480	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/chkstk.asm	65
-009624AB	<external>/dd/vctools/crt_bld/self_x86/crt/src/strnicmp.c	51
-0096259D	<external>/dd/vctools/crt_bld/self_x86/crt/src/strnicmp.c	125
+009624AB	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strnicmp.c	51
+0096259D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strnicmp.c	125
 00962600	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strlen.asm	54
-00963D70	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/ehvecdtr.cpp	119
+00963D70	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/ehvecdtr.cpp	119
 00963E40	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strcmp.asm	65
-00963ED0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/Intel/STRSPN.ASM	191
-00963F20	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strspn.asm	191
-00963F66	<external>/dd/vctools/crt_bld/self_x86/crt/src/abort.c	53
-0096407D	<external>/dd/vctools/crt_bld/self_x86/crt/src/abort.c	158
-0096409E	<external>/dd/vctools/crt_bld/self_x86/crt/src/mktime64.c	123
-00964353	<external>/dd/vctools/crt_bld/self_x86/crt/src/mktime64.c	57
-00964365	<external>/dd/vctools/crt_bld/self_x86/crt/src/tmpfile.c	470
-0096442C	<external>/dd/vctools/crt_bld/self_x86/crt/src/tmpfile.c	546
-009644DC	<external>/dd/vctools/crt_bld/self_x86/crt/src/tmpfile.c	96
-0096461B	<external>/dd/vctools/crt_bld/self_x86/crt/src/tmpfile.c	264
-00964642	<external>/dd/vctools/crt_bld/self_x86/crt/src/strftime.c	868
-00964662	<external>/dd/vctools/crt_bld/self_x86/crt/src/strftime.c	908
-009646DD	<external>/dd/vctools/crt_bld/self_x86/crt/src/strftime.c	547
-00964AC5	<external>/dd/vctools/crt_bld/self_x86/crt/src/strftime.c	1034
-00964F26	<external>/dd/vctools/crt_bld/self_x86/crt/src/strftime.c	357
-009650CA	<external>/dd/vctools/crt_bld/self_x86/crt/src/strftime.c	301
-009650E9	<external>/dd/vctools/crt_bld/self_x86/crt/src/fputc.c	41
-009651F5	<external>/dd/vctools/crt_bld/self_x86/crt/src/fputs.c	42
-00965304	<external>/dd/vctools/crt_bld/self_x86/crt/src/feoferr.c	70
-00965338	<external>/dd/vctools/crt_bld/self_x86/crt/src/stat64.c	320
-009653B2	<external>/dd/vctools/crt_bld/self_x86/crt/src/stat64.c	369
-00965412	<external>/dd/vctools/crt_bld/self_x86/crt/src/stat64.c	100
-00965851	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/throw.cpp	95
-0096589D	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/i386/ehprolg3.c	93
-009658D0	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/i386/ehprolg3.c	206
-00965A70	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/tran/i386/cpu_disp.c	41
-00965AC0	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/tran/i386/cpu_disp.c	59
-00965B22	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/tran/i386/cpu_disp.c	111
-00965B2F	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbctype.c	329
-00965B5E	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbctype.c	363
-00965BC2	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbctype.c	402
-00965D55	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbctype.c	496
-00965DF9	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbctype.c	282
-00965E75	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbctype.c	686
-0096605A	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbctype.c	574
-009661F4	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbctype.c	843
-00966212	<external>/dd/vctools/crt_bld/self_x86/crt/src/setlocal.c	144
-0096635B	<external>/dd/vctools/crt_bld/self_x86/crt/src/setlocal.c	225
-009663EA	<external>/dd/vctools/crt_bld/self_x86/crt/src/setlocal.c	259
-00966483	<external>/dd/vctools/crt_bld/self_x86/crt/src/setlocal.c	321
-009664C1	<external>/dd/vctools/crt_bld/self_x86/crt/src/setlocal.c	382
-00966537	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	86
-009665A9	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	140
-009665B2	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	161
-00966624	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	208
-0096662D	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	226
-00966647	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	240
-0096664D	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	254
-00966681	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	283
-0096669E	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	440
-009666DB	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	490
-009667C2	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	566
-0096683B	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	640
-00966855	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	674
-00966984	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	764
-009669F2	<external>/dd/vctools/crt_bld/self_x86/crt/src/tidtable.c	314
-00966B7F	<external>/dd/vctools/crt_bld/self_x86/crt/src/a_map.c	99
-00966F24	<external>/dd/vctools/crt_bld/self_x86/crt/src/a_map.c	363
-00966F69	<external>/dd/vctools/crt_bld/self_x86/crt/src/_wctype.c	55
-00966FA1	<external>/dd/vctools/crt_bld/self_x86/crt/src/_wctype.c	63
-00966FB4	<external>/dd/vctools/crt_bld/self_x86/crt/src/isctype.c	114
-0096706C	<external>/dd/vctools/crt_bld/self_x86/crt/src/_flsbuf.c	93
-009671D0	<external>/dd/vctools/crt_bld/self_x86/crt/src/output.c	2546
-0096721D	<external>/dd/vctools/crt_bld/self_x86/crt/src/output.c	970
-00968554	<external>/dd/vctools/crt_bld/self_x86/crt/src/vsprintf.c	107
-00968620	<external>/dd/vctools/crt_bld/self_x86/crt/src/vsprintf.c	229
-009686A8	<external>/dd/vctools/crt_bld/self_x86/crt/src/vsprintf.c	272
-009687AF	<external>/dd/vctools/crt_bld/self_x86/crt/src/vsprintf.c	339
-009687CF	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0msg.c	174
-0096897A	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0msg.c	141
-009689B3	<external>/dd/vctools/crt_bld/self_x86/crt/src/inithelp.c	166
-009689C2	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/typname.cpp	62
-00968A32	<external>/dd/vctools/crt_bld/self_x86/crt/src/heapinit.c	167
-00968A62	<external>/dd/vctools/crt_bld/self_x86/crt/src/mlock.c	137
-00968AAD	<external>/dd/vctools/crt_bld/self_x86/crt/src/mlock.c	188
-00968B04	<external>/dd/vctools/crt_bld/self_x86/crt/src/mlock.c	371
-00968B1B	<external>/dd/vctools/crt_bld/self_x86/crt/src/mlock.c	259
-00968BDE	<external>/dd/vctools/crt_bld/self_x86/crt/src/mlock.c	333
-00968C11	<external>/dd/vctools/crt_bld/self_x86/crt/src/sbheap.c	306
-00968C41	<external>/dd/vctools/crt_bld/self_x86/crt/src/sbheap.c	381
-00968F57	<external>/dd/vctools/crt_bld/self_x86/crt/src/sbheap.c	891
-00969007	<external>/dd/vctools/crt_bld/self_x86/crt/src/sbheap.c	958
-0096910F	<external>/dd/vctools/crt_bld/self_x86/crt/src/sbheap.c	1061
-009693F0	<external>/dd/vctools/crt_bld/self_x86/crt/src/sbheap.c	632
-00969731	<external>/dd/vctools/crt_bld/self_x86/crt/src/_sftbuf.c	59
-009697CD	<external>/dd/vctools/crt_bld/self_x86/crt/src/_sftbuf.c	138
-00969801	<external>/dd/vctools/crt_bld/self_x86/crt/src/input.c	172
-00969858	<external>/dd/vctools/crt_bld/self_x86/crt/src/input.c	1391
-00969878	<external>/dd/vctools/crt_bld/self_x86/crt/src/input.c	1430
-0096988E	<external>/dd/vctools/crt_bld/self_x86/crt/src/input.c	1435
-009698A1	<external>/dd/vctools/crt_bld/self_x86/crt/src/input.c	1442
-009698CB	<external>/dd/vctools/crt_bld/self_x86/crt/src/input.c	372
-0096A888	<external>/dd/vctools/crt_bld/self_x86/crt/src/crtheap.c	39
-0096A8CD	<external>/dd/vctools/crt_bld/self_x86/crt/src/crtheap.c	54
-0096A919	<external>/dd/vctools/crt_bld/self_x86/crt/src/crtheap.c	71
-0096A967	<external>/dd/vctools/crt_bld/self_x86/crt/src/crtheap.c	86
-0096A9B9	<external>/dd/vctools/crt_bld/self_x86/crt/src/msize.c	43
-0096ADF5	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbsnbico.c	53
-0096AEE3	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbsnbico.c	85
-0096AEFD	<external>/dd/vctools/crt_bld/self_x86/crt/src/wtombenv.c	43
-0096AF94	<external>/dd/vctools/crt_bld/self_x86/crt/src/tcscpy_s.inl	13
-0096AFFC	<external>/dd/vctools/crt_bld/self_x86/crt/src/strlen_s.c	38
-0096B019	<external>/dd/vctools/crt_bld/self_x86/crt/src/setenv.c	387
-0096B06F	<external>/dd/vctools/crt_bld/self_x86/crt/src/setenv.c	428
-0096B0C9	<external>/dd/vctools/crt_bld/self_x86/crt/src/setenv.c	76
-0096B42C	<external>/dd/vctools/crt_bld/self_x86/crt/src/wcslen.c	41
-0096B446	<external>/dd/vctools/crt_bld/self_x86/crt/src/setenv.c	387
-0096B498	<external>/dd/vctools/crt_bld/self_x86/crt/src/setenv.c	428
-0096B4F2	<external>/dd/vctools/crt_bld/self_x86/crt/src/setenv.c	76
-0096B73D	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbschr.c	53
-0096B7F9	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbschr.c	86
-0096B810	<external>/dd/vctools/crt_bld/self_x86/crt/src/_open.c	58
-0096BAD9	<external>/dd/vctools/crt_bld/self_x86/crt/src/stream.c	45
-0096BD67	<external>/dd/vctools/crt_bld/self_x86/crt/src/_filbuf.c	100
-0096BE92	<external>/dd/vctools/crt_bld/self_x86/crt/src/read.c	114
-0096C454	<external>/dd/vctools/crt_bld/self_x86/crt/src/read.c	80
-0096C551	<external>/dd/vctools/crt_bld/self_x86/crt/src/fileno.c	40
-0096C583	<external>/dd/vctools/crt_bld/self_x86/crt/src/lseek.c	94
-0096C5F8	<external>/dd/vctools/crt_bld/self_x86/crt/src/lseek.c	61
-0096C6D4	<external>/dd/vctools/crt_bld/self_x86/crt/src/close.c	72
-0096C770	<external>/dd/vctools/crt_bld/self_x86/crt/src/close.c	42
-0096C83D	<external>/dd/vctools/crt_bld/self_x86/crt/src/_freebuf.c	47
-0096C86E	<external>/dd/vctools/crt_bld/self_x86/crt/src/handler.cpp	31
-0096C87D	<external>/dd/vctools/crt_bld/self_x86/crt/src/handler.cpp	131
+00963ED0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/STRSPN.ASM	191
+00963F20	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/STRSPN.ASM	191
+00963F66	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/abort.c	53
+0096407D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/abort.c	158
+0096409E	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mktime64.c	123
+00964353	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mktime64.c	57
+00964365	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tmpfile.c	470
+0096442C	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tmpfile.c	546
+009644DC	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tmpfile.c	96
+0096461B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tmpfile.c	264
+00964642	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strftime.c	868
+00964662	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strftime.c	908
+009646DD	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strftime.c	547
+00964AC5	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strftime.c	1034
+00964F26	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strftime.c	357
+009650CA	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strftime.c	301
+009650E9	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fputc.c	41
+009651F5	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fputs.c	42
+00965304	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/feoferr.c	70
+00965338	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stat64.c	320
+009653B2	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stat64.c	369
+00965412	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stat64.c	100
+00965851	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/throw.cpp	95
+0096589D	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/ehprolg3.c	93
+009658D0	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/ehprolg3.c	206
+00965A70	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cpu_disp.c	41
+00965AC0	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cpu_disp.c	59
+00965B22	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cpu_disp.c	111
+00965B2F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbctype.c	329
+00965B5E	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbctype.c	363
+00965BC2	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbctype.c	402
+00965D55	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbctype.c	496
+00965DF9	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbctype.c	282
+00965E75	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbctype.c	686
+0096605A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbctype.c	574
+009661F4	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbctype.c	843
+00966212	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setlocal.c	144
+0096635B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setlocal.c	225
+009663EA	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setlocal.c	259
+00966483	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setlocal.c	321
+009664C1	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setlocal.c	382
+00966537	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	86
+009665A9	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	140
+009665B2	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	161
+00966624	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	208
+0096662D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	226
+00966647	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	240
+0096664D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	254
+00966681	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	283
+0096669E	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	440
+009666DB	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	490
+009667C2	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	566
+0096683B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	640
+00966855	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	674
+00966984	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	764
+009669F2	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c	314
+00966B7F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_map.c	99
+00966F24	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_map.c	363
+00966F69	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_wctype.c	55
+00966FA1	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_wctype.c	63
+00966FB4	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/isctype.c	114
+0096706C	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_flsbuf.c	93
+009671D0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/output.c	2546
+0096721D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/output.c	970
+00968554	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c	107
+00968620	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c	229
+009686A8	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c	272
+009687AF	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c	339
+009687CF	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0msg.c	174
+0096897A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0msg.c	141
+009689B3	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/inithelp.c	166
+009689C2	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/typname.cpp	62
+00968A32	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/heapinit.c	167
+00968A62	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mlock.c	137
+00968AAD	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mlock.c	188
+00968B04	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mlock.c	371
+00968B1B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mlock.c	259
+00968BDE	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mlock.c	333
+00968C11	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sbheap.c	306
+00968C41	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sbheap.c	381
+00968F57	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sbheap.c	891
+00969007	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sbheap.c	958
+0096910F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sbheap.c	1061
+009693F0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sbheap.c	632
+00969731	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_sftbuf.c	59
+009697CD	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_sftbuf.c	138
+00969801	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/input.c	172
+00969858	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/input.c	1391
+00969878	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/input.c	1430
+0096988E	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/input.c	1435
+009698A1	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/input.c	1442
+009698CB	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/input.c	372
+0096A888	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtheap.c	39
+0096A8CD	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtheap.c	54
+0096A919	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtheap.c	71
+0096A967	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtheap.c	86
+0096A9B9	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/msize.c	43
+0096ADF5	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsnbico.c	53
+0096AEE3	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsnbico.c	85
+0096AEFD	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wtombenv.c	43
+0096AF94	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tcscpy_s.inl	13
+0096AFFC	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strlen_s.c	38
+0096B019	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setenv.c	387
+0096B06F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setenv.c	428
+0096B0C9	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setenv.c	76
+0096B42C	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wcslen.c	41
+0096B446	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setenv.c	387
+0096B498	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setenv.c	428
+0096B4F2	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setenv.c	76
+0096B73D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbschr.c	53
+0096B7F9	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbschr.c	86
+0096B810	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_open.c	58
+0096BAD9	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stream.c	45
+0096BD67	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_filbuf.c	100
+0096BE92	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/read.c	114
+0096C454	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/read.c	80
+0096C551	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fileno.c	40
+0096C583	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/lseek.c	94
+0096C5F8	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/lseek.c	61
+0096C6D4	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/close.c	72
+0096C770	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/close.c	42
+0096C83D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_freebuf.c	47
+0096C86E	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/handler.cpp	31
+0096C87D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/handler.cpp	131
 0096C8B0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/alloca16.asm	44
-0096C8DC	<external>/dd/vctools/crt_bld/self_x86/crt/src/write.c	96
-0096D00F	<external>/dd/vctools/crt_bld/self_x86/crt/src/write.c	62
-0096D0EB	<external>/dd/vctools/crt_bld/self_x86/crt/src/ioinit.c	111
-0096D33F	<external>/dd/vctools/crt_bld/self_x86/crt/src/closeall.c	43
-0096D3DE	<external>/dd/vctools/crt_bld/self_x86/crt/src/commit.c	39
-0096D4BF	<external>/dd/vctools/crt_bld/self_x86/crt/src/timeset.c	35
-0096D4F8	<external>/dd/vctools/crt_bld/self_x86/crt/src/timeset.c	44
-0096D531	<external>/dd/vctools/crt_bld/self_x86/crt/src/timeset.c	53
-0096D56A	<external>/dd/vctools/crt_bld/self_x86/crt/src/timeset.c	118
-0096D570	<external>/dd/vctools/crt_bld/self_x86/crt/src/timeset.c	123
-0096D576	<external>/dd/vctools/crt_bld/self_x86/crt/src/timeset.c	128
-0096D57C	<external>/dd/vctools/crt_bld/self_x86/crt/src/timeset.c	133
-0096D706	<external>/dd/vctools/crt_bld/self_x86/crt/src/time.h	187
-0096D717	<external>/dd/vctools/crt_bld/self_x86/crt/src/time.h	188
-0096D728	<external>/dd/vctools/crt_bld/self_x86/crt/src/time.h	189
-0096D739	<external>/dd/vctools/crt_bld/self_x86/crt/src/tzset.c	124
-0096DA7F	<external>/dd/vctools/crt_bld/self_x86/crt/src/tzset.c	409
-0096DC76	<external>/dd/vctools/crt_bld/self_x86/crt/src/tzset.c	554
-0096DE4E	<external>/dd/vctools/crt_bld/self_x86/crt/src/tzset.c	85
-0096DE9D	<external>/dd/vctools/crt_bld/self_x86/crt/src/tzset.c	538
+0096C8DC	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/write.c	96
+0096D00F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/write.c	62
+0096D0EB	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/ioinit.c	111
+0096D33F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/closeall.c	43
+0096D3DE	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/commit.c	39
+0096D4BF	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/timeset.c	35
+0096D4F8	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/timeset.c	44
+0096D531	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/timeset.c	53
+0096D56A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/timeset.c	118
+0096D570	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/timeset.c	123
+0096D576	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/timeset.c	128
+0096D57C	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/timeset.c	133
+0096D706	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/time.h	187
+0096D717	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/time.h	188
+0096D728	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/time.h	189
+0096D739	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tzset.c	124
+0096DA7F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tzset.c	409
+0096DC76	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tzset.c	554
+0096DE4E	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tzset.c	85
+0096DE9D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tzset.c	538
 0096DEE0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/llrem.asm	44
-0096DF92	<external>/dd/vctools/crt_bld/self_x86/crt/src/gmtime.c	168
+0096DF92	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/gmtime.c	168
 0096DFD0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/ulldvrm.asm	45
-0096E065	<external>/dd/vctools/crt_bld/self_x86/crt/src/dbghook.c	62
-0096E06D	<external>/dd/vctools/crt_bld/self_x86/crt/src/dtoxtm64.c	47
-0096E2D8	<external>/dd/vctools/crt_bld/self_x86/crt/src/drive.c	44
-0096E3ED	<external>/dd/vctools/crt_bld/self_x86/crt/src/cmiscdat.c	54
-0096E410	<external>/dd/vctools/crt_bld/self_x86/crt/src/pesect.c	44
-0096E450	<external>/dd/vctools/crt_bld/self_x86/crt/src/pesect.c	92
-0096E4A0	<external>/dd/vctools/crt_bld/self_x86/crt/src/pesect.c	149
-0096E55D	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/hooks.cpp	95
-0096E596	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/hooks.cpp	143
-0096E5A9	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/hooks.cpp	177
-0096E5E1	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/hooks.cpp	75
-0096E5F2	<external>/dd/vctools/crt_bld/self_x86/crt/src/winxfltr.c	206
-0096E752	<external>/dd/vctools/crt_bld/self_x86/crt/src/winsig.c	57
-0096E770	<external>/dd/vctools/crt_bld/self_x86/crt/src/winsig.c	634
-0096E7A7	<external>/dd/vctools/crt_bld/self_x86/crt/src/winsig.c	676
-0096E7B4	<external>/dd/vctools/crt_bld/self_x86/crt/src/winsig.c	452
-0096E964	<external>/dd/vctools/crt_bld/self_x86/crt/src/rand_s.c	58
-0096E973	<external>/dd/vctools/crt_bld/self_x86/crt/src/initcrit.c	47
-0096E982	<external>/dd/vctools/crt_bld/self_x86/crt/src/initcrit.c	79
-0096E9E2	<external>/dd/vctools/crt_bld/self_x86/crt/src/calloc_impl.c	23
-0096EBD5	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/unhandld.cpp	67
-0096EC17	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/unhandld.cpp	86
-0096EC25	<external>/dd/vctools/crt_bld/self_x86/crt/src/wincmdln.c	53
-0096EC84	<external>/dd/vctools/crt_bld/self_x86/crt/src/stdenvp.c	77
-0096ED62	<external>/dd/vctools/crt_bld/self_x86/crt/src/stdargv.c	221
-0096EEFC	<external>/dd/vctools/crt_bld/self_x86/crt/src/stdargv.c	88
-0096EFB7	<external>/dd/vctools/crt_bld/self_x86/crt/src/a_env.c	43
-0096F0EE	<external>/dd/vctools/crt_bld/self_x86/crt/src/gs_support.c	97
-0096F26A	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	138
-0096F2DD	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	204
-0096F35F	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	229
-0096F37B	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	235
-0096F3BD	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	274
-0096F3D7	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	1131
-0096F3F6	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	133
-0096F409	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	199
-0096F41C	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	318
-0096F58B	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	457
-0096F65B	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	489
-0096F67B	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	531
-0096F9EE	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	762
-0096FAE5	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	893
-0096FBA0	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	969
-0096FC9A	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	1092
-0096FD22	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/conv/cvt.c	1108
-0096FD45	<external>/dd/vctools/crt_bld/self_x86/crt/src/intel/fp8.c	30
-0096FDD7	<external>/dd/vctools/crt_bld/self_x86/crt/src/gs_report.c	140
-00971C00	<external>/dd/vctools/crt_bld/self_x86/crt/src/expand.c	23
-00971C7F	<external>/dd/vctools/crt_bld/self_x86/crt/src/expand.c	91
-00971DBF	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/stdhpp/exception	351
-00971DDD	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/stdhpp/exception	355
-00971E0F	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	1001
-00971E6E	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	1037
-00971EB7	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	1107
-00971F98	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	1535
-00971FDD	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	1793
-00972032	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	1844
-0097205B	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	2304
-009720D6	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	2381
-0097211F	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	1433
-009722BB	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	1577
-0097243A	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	1714
-009724CC	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	1219
-0097253A	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	915
-0097262E	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	569
-00972992	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/frame.cpp	412
+0096E065	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/dbghook.c	62
+0096E06D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/dtoxtm64.c	47
+0096E2D8	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/drive.c	44
+0096E3ED	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/cmiscdat.c	54
+0096E410	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/pesect.c	44
+0096E450	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/pesect.c	92
+0096E4A0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/pesect.c	149
+0096E55D	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/hooks.cpp	95
+0096E596	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/hooks.cpp	143
+0096E5A9	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/hooks.cpp	177
+0096E5E1	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/hooks.cpp	75
+0096E5F2	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winxfltr.c	206
+0096E752	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winsig.c	57
+0096E770	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winsig.c	634
+0096E7A7	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winsig.c	676
+0096E7B4	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winsig.c	452
+0096E964	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/rand_s.c	58
+0096E973	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/initcrit.c	47
+0096E982	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/initcrit.c	79
+0096E9E2	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/calloc_impl.c	23
+0096EBD5	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/unhandld.cpp	67
+0096EC17	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/unhandld.cpp	86
+0096EC25	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wincmdln.c	53
+0096EC84	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stdenvp.c	77
+0096ED62	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stdargv.c	221
+0096EEFC	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stdargv.c	88
+0096EFB7	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_env.c	43
+0096F0EE	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/gs_support.c	97
+0096F26A	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	138
+0096F2DD	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	204
+0096F35F	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	229
+0096F37B	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	235
+0096F3BD	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	274
+0096F3D7	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	1131
+0096F3F6	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	133
+0096F409	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	199
+0096F41C	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	318
+0096F58B	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	457
+0096F65B	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	489
+0096F67B	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	531
+0096F9EE	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	762
+0096FAE5	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	893
+0096FBA0	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	969
+0096FC9A	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	1092
+0096FD22	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c	1108
+0096FD45	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/fp8.c	30
+0096FDD7	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/gs_report.c	140
+00971C00	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/expand.c	23
+00971C7F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/expand.c	91
+00971DBF	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/stdhpp/exception	351
+00971DDD	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/stdhpp/exception	355
+00971E0F	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	1001
+00971E6E	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	1037
+00971EB7	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	1107
+00971F98	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	1535
+00971FDD	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	1793
+00972032	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	1844
+0097205B	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	2304
+009720D6	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	2381
+0097211F	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	1433
+009722BB	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	1577
+0097243A	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	1714
+009724CC	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	1219
+0097253A	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	915
+0097262E	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	569
+00972992	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp	412
 00972A80	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/lowhelpr.asm	48
 00973460	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/_strnicm.asm	69
-009734C1	<external>/dd/vctools/crt_bld/self_x86/crt/src/output.c	2416
-009734F4	<external>/dd/vctools/crt_bld/self_x86/crt/src/output.c	2481
-0097351A	<external>/dd/vctools/crt_bld/self_x86/crt/src/output.c	970
-009740EA	<external>/dd/vctools/crt_bld/self_x86/crt/src/tcscat_s.inl	13
-0097415E	<external>/dd/vctools/crt_bld/self_x86/crt/src/xtoa.c	93
-0097423B	<external>/dd/vctools/crt_bld/self_x86/crt/src/xtoa.c	199
-00974255	<external>/dd/vctools/crt_bld/self_x86/crt/src/getpid.c	35
-0097425B	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbsrchr.c	51
-00974317	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbsrchr.c	85
-0097432E	<external>/dd/vctools/crt_bld/self_x86/crt/src/rmtmp.c	50
-009743D7	<external>/dd/vctools/crt_bld/self_x86/crt/src/access.c	76
-00974460	<external>/dd/vctools/crt_bld/self_x86/crt/src/access.c	45
-00974478	<external>/dd/vctools/crt_bld/self_x86/crt/src/open.c	201
-00974B97	<external>/dd/vctools/crt_bld/self_x86/crt/src/open.c	151
-00974C63	<external>/dd/vctools/crt_bld/self_x86/crt/src/open.c	904
-00974C83	<external>/dd/vctools/crt_bld/self_x86/crt/src/fullpath.c	93
-00974D8D	<external>/dd/vctools/crt_bld/self_x86/crt/src/stat.c	71
-00974E4A	<external>/dd/vctools/crt_bld/self_x86/crt/src/fstat64.c	82
-009751A1	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbtolwr.c	50
-00975247	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbtolwr.c	90
-0097525A	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbscspn.c	75
-00975327	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbscspn.c	141
-0097533E	<external>/dd/vctools/crt_bld/self_x86/crt/src/a_str.c	66
-009754F8	<external>/dd/vctools/crt_bld/self_x86/crt/src/a_str.c	194
-0097553A	<external>/dd/vctools/crt_bld/self_x86/crt/src/inittime.c	179
-009756CF	<external>/dd/vctools/crt_bld/self_x86/crt/src/initnum.c	211
-00975714	<external>/dd/vctools/crt_bld/self_x86/crt/src/initmon.c	255
-009757A2	<external>/dd/vctools/crt_bld/self_x86/crt/src/initctyp.c	268
-009757C8	<external>/dd/vctools/crt_bld/self_x86/crt/src/tcsncpy_s.inl	13
-00975880	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/Intel/STRSPN.ASM	191
-009758C0	<external>/dd/vctools/crt_bld/self_x86/crt/src/convrtcp.c	39
-00975909	<external>/dd/vctools/crt_bld/self_x86/crt/src/convrtcp.c	79
-00975ABD	<external>/dd/vctools/crt_bld/self_x86/crt/src/lseeki64.c	120
-00975B42	<external>/dd/vctools/crt_bld/self_x86/crt/src/lseeki64.c	73
-00975C5B	<external>/dd/vctools/crt_bld/self_x86/crt/src/_getbuf.c	43
-00975CA4	<external>/dd/vctools/crt_bld/self_x86/crt/src/isatty.c	37
-00975D08	<external>/dd/vctools/crt_bld/self_x86/crt/src/wctomb.c	56
-00975E74	<external>/dd/vctools/crt_bld/self_x86/crt/src/wctomb.c	144
-00976AE7	<external>/dd/vctools/crt_bld/self_x86/crt/src/crtmbox.c	41
-00976C50	<external>/dd/vctools/crt_bld/self_x86/crt/src/errmode.c	43
-00976C9B	<external>/dd/vctools/crt_bld/self_x86/crt/src/ungetc_nolock.inl	33
-00976D8C	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbtowc.c	55
-00976EA3	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbtowc.c	123
-00976EBD	<external>/dd/vctools/crt_bld/self_x86/crt/src/recalloc.c	73
-009778A8	<external>/dd/vctools/crt_bld/self_x86/crt/src/a_cmp.c	50
-009778C6	<external>/dd/vctools/crt_bld/self_x86/crt/src/a_cmp.c	96
-00977C36	<external>/dd/vctools/crt_bld/self_x86/crt/src/a_cmp.c	349
-00977C78	<external>/dd/vctools/crt_bld/self_x86/crt/src/strnicol.c	55
-00977D72	<external>/dd/vctools/crt_bld/self_x86/crt/src/wcsnicol.c	58
-00977EB5	<external>/dd/vctools/crt_bld/self_x86/crt/src/wcsnicol.c	111
-00977F59	<external>/dd/vctools/crt_bld/self_x86/crt/src/wcsdup.c	68
-00977FB1	<external>/dd/vctools/crt_bld/self_x86/crt/src/tcscpy_s.inl	13
-00978020	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbtowenv.c	43
-009780A7	<external>/dd/vctools/crt_bld/self_x86/crt/src/stdenvp.c	77
-00978185	<external>/dd/vctools/crt_bld/self_x86/crt/src/w_env.c	37
-009781DC	<external>/dd/vctools/crt_bld/self_x86/crt/src/wcschr.c	38
-00978202	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbsnbicm.c	52
-0097842D	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbsnbicm.c	134
-00978447	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbsnbcmp.c	50
-009785B1	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbsnbcmp.c	106
-009785CB	<external>/dd/vctools/crt_bld/self_x86/crt/src/osfinfo.c	213
-0097864C	<external>/dd/vctools/crt_bld/self_x86/crt/src/osfinfo.c	263
-009786D2	<external>/dd/vctools/crt_bld/self_x86/crt/src/osfinfo.c	312
-00978749	<external>/dd/vctools/crt_bld/self_x86/crt/src/osfinfo.c	437
-009787E9	<external>/dd/vctools/crt_bld/self_x86/crt/src/osfinfo.c	489
-00978810	<external>/dd/vctools/crt_bld/self_x86/crt/src/osfinfo.c	52
-009789AA	<external>/dd/vctools/crt_bld/self_x86/crt/src/putwch.c	84
-00978A6F	<external>/dd/vctools/crt_bld/self_x86/crt/src/crt0fp.c	46
-00978A78	<external>/dd/vctools/crt_bld/self_x86/crt/src/ismbbyte.c	213
-00978ACB	<external>/dd/vctools/crt_bld/self_x86/crt/src/ismbbyte.c	171
-00978AE3	<external>/dd/vctools/crt_bld/self_x86/crt/src/atodbl.inl	40
-00978B8B	<external>/dd/vctools/crt_bld/self_x86/crt/src/atodbl.inl	125
-00978C33	<external>/dd/vctools/crt_bld/self_x86/crt/src/_fptostr.c	50
+009734C1	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/output.c	2416
+009734F4	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/output.c	2481
+0097351A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/output.c	970
+009740EA	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tcscat_s.inl	13
+0097415E	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/xtoa.c	93
+0097423B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/xtoa.c	199
+00974255	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/getpid.c	35
+0097425B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsrchr.c	51
+00974317	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsrchr.c	85
+0097432E	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/rmtmp.c	50
+009743D7	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/access.c	76
+00974460	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/access.c	45
+00974478	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/open.c	201
+00974B97	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/open.c	151
+00974C63	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/open.c	904
+00974C83	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fullpath.c	93
+00974D8D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stat.c	71
+00974E4A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fstat64.c	82
+009751A1	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbtolwr.c	50
+00975247	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbtolwr.c	90
+0097525A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbscspn.c	75
+00975327	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbscspn.c	141
+0097533E	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_str.c	66
+009754F8	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_str.c	194
+0097553A	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/inittime.c	179
+009756CF	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/initnum.c	211
+00975714	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/initmon.c	255
+009757A2	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/initctyp.c	268
+009757C8	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tcsncpy_s.inl	13
+00975880	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/STRSPN.ASM	191
+009758C0	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/convrtcp.c	39
+00975909	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/convrtcp.c	79
+00975ABD	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/lseeki64.c	120
+00975B42	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/lseeki64.c	73
+00975C5B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_getbuf.c	43
+00975CA4	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/isatty.c	37
+00975D08	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wctomb.c	56
+00975E74	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wctomb.c	144
+00976AE7	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtmbox.c	41
+00976C50	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/errmode.c	43
+00976C9B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/ungetc_nolock.inl	33
+00976D8C	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbtowc.c	55
+00976EA3	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbtowc.c	123
+00976EBD	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/recalloc.c	73
+009778A8	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_cmp.c	50
+009778C6	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_cmp.c	96
+00977C36	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_cmp.c	349
+00977C78	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strnicol.c	55
+00977D72	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wcsnicol.c	58
+00977EB5	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wcsnicol.c	111
+00977F59	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wcsdup.c	68
+00977FB1	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tcscpy_s.inl	13
+00978020	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbtowenv.c	43
+009780A7	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stdenvp.c	77
+00978185	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/w_env.c	37
+009781DC	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wcschr.c	38
+00978202	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsnbicm.c	52
+0097842D	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsnbicm.c	134
+00978447	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsnbcmp.c	50
+009785B1	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsnbcmp.c	106
+009785CB	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/osfinfo.c	213
+0097864C	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/osfinfo.c	263
+009786D2	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/osfinfo.c	312
+00978749	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/osfinfo.c	437
+009787E9	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/osfinfo.c	489
+00978810	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/osfinfo.c	52
+009789AA	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/putwch.c	84
+00978A6F	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0fp.c	46
+00978A78	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/ismbbyte.c	213
+00978ACB	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/ismbbyte.c	171
+00978AE3	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/atodbl.inl	40
+00978B8B	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/atodbl.inl	125
+00978C33	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_fptostr.c	50
 00978E40	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/lldvrm.asm	45
 00978F20	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/ullshr.asm	42
-00979F0E	<external>/dd/vctools/crt_bld/self_x86/crt/prebuild/eh/validate.cpp	63
-00979F20	<external>/dd/vctools/crt_bld/self_x86/crt/src/chsize.c	82
-0097A0D6	<external>/dd/vctools/crt_bld/self_x86/crt/src/setmode.c	104
-0097A192	<external>/dd/vctools/crt_bld/self_x86/crt/src/setmode.c	159
-0097A1CB	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbsicmp.c	50
-0097A3F1	<external>/dd/vctools/crt_bld/self_x86/crt/src/mbsicmp.c	143
-0097A408	<external>/dd/vctools/crt_bld/self_x86/crt/src/w_cmp.c	45
-0097A428	<external>/dd/vctools/crt_bld/self_x86/crt/src/w_cmp.c	122
-0097A4A4	<external>/dd/vctools/crt_bld/self_x86/crt/src/initcon.c	90
-0097A4C3	<external>/dd/vctools/crt_bld/self_x86/crt/src/initcon.c	120
+00979F0E	<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/validate.cpp	63
+00979F20	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/chsize.c	82
+0097A0D6	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setmode.c	104
+0097A192	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setmode.c	159
+0097A1CB	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsicmp.c	50
+0097A3F1	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsicmp.c	143
+0097A408	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/w_cmp.c	45
+0097A428	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/w_cmp.c	122
+0097A4A4	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/initcon.c	90
+0097A4C3	<external>/dd/vctools/crt_bld/SELF_X86/crt/src/initcon.c	120
 0097B25A	<external>/bt/193462/audio/shared/wavehlp.cpp	116
 0097B292	<external>/bt/193462/audio/shared/wavehlp.cpp	514
 0097B2CC	<external>/bt/193462/audio/shared/wavehlp.cpp	651

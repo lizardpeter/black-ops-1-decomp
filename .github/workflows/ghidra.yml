@@ -47,9 +47,11 @@ jobs:
             -import /tmp/in/${{ matrix.build }}.exe \
             -scriptPath tools/ghidra \
             -preScript PrepPdb.java /tmp/in/${{ matrix.build }}.pdb \
-            -postScript ExportAll.java /tmp/raw /tmp/raw/${{ matrix.build }}.gzf \
+            -postScript ExportAll.java /tmp/raw \
             -analysisTimeoutPerFile 18000 \
             -log /tmp/raw/analyze.log -scriptlog /tmp/raw/analyze-scripts.log
+          # the saved Ghidra project itself: reused by the decompile shards and committed to git
+          tar -C /tmp/proj -czf /tmp/raw/project.tar.gz .
           ls -la /tmp/raw
       - uses: actions/upload-artifact@v4
         if: always()
@@ -82,8 +84,9 @@ jobs:
       - name: Decompile shard
         run: |
           mkdir -p /tmp/proj /tmp/out
+          tar -C /tmp/proj -xzf /tmp/raw/project.tar.gz
           /opt/ghidra/support/analyzeHeadless /tmp/proj t5 \
-            -import /tmp/raw/${{ matrix.build }}.gzf -noanalysis \
+            -process ${{ matrix.build }}.exe -noanalysis -readOnly \
             -scriptPath tools/ghidra \
             -postScript Decompile.java /tmp/out/decomp-${{ matrix.shard }}.jsonl ${{ matrix.shard }} $SHARDS 90 \
             -log /tmp/out/decompile-${{ matrix.shard }}.log -scriptlog /tmp/out/decompile-${{ matrix.shard }}-scripts.log
@@ -112,10 +115,12 @@ jobs:
             if [ -f $raw/functions.tsv ]; then python3 tools/ghidra/publish.py $b $raw; fi
             mkdir -p analysis/$b/logs analysis/$b/ghidra
             cp $raw/*.log analysis/$b/logs/ 2>/dev/null || true
-            if [ -f $raw/$b.gzf ]; then
-              rm -f analysis/$b/ghidra/project.gzf.part-*
-              split -b 95m -d -a 2 $raw/$b.gzf analysis/$b/ghidra/project.gzf.part-
-              sha256sum $raw/$b.gzf | cut -d' ' -f1 > analysis/$b/ghidra/project.gzf.sha256
+            if [ -s $raw/project.tar.gz ]; then
+              # Ghidra project (.gpr/.rep), split under GitHub's 100 MB file limit.
+              # Restore: cat project.tar.gz.part-* | tar -xz
+              rm -f analysis/$b/ghidra/project.*
+              split -b 95m -d -a 2 $raw/project.tar.gz analysis/$b/ghidra/project.tar.gz.part-
+              sha256sum $raw/project.tar.gz | cut -d' ' -f1 > analysis/$b/ghidra/project.tar.gz.sha256
             fi
           done
       - name: Commit

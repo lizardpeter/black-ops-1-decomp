@@ -1,5 +1,5 @@
 // Post-analysis export of everything except decompiler output.
-// Args: <out-dir> [<packed-project.gzf>]
+// Args: <out-dir>
 // Writes: functions.tsv, callgraph.tsv, symbols.tsv, strings.tsv, types.h, disasm.jsonl
 //@category T5
 import java.io.BufferedWriter;
@@ -15,7 +15,6 @@ import java.util.Set;
 import com.google.gson.JsonObject;
 
 import ghidra.app.script.GhidraScript;
-import ghidra.app.util.exporter.GzfExporter;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressRange;
 import ghidra.program.model.address.AddressSetView;
@@ -168,12 +167,6 @@ public class ExportAll extends GhidraScript {
 		DataTypeManager dtm = currentProgram.getDataTypeManager();
 		try (Writer hw = new BufferedWriter(new FileWriter(new File(out, "types.h")))) {
 			new DataTypeWriter(dtm, hw).write(dtm, monitor);
-		}
-
-		if (args.length > 1) {
-			File gzf = new File(args[1]);
-			new GzfExporter().export(gzf, currentProgram, null, monitor);
-			println("packed project: " + gzf + " (" + gzf.length() + " bytes)");
 		}
 	}
 }

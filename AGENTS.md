@@ -26,7 +26,7 @@ analysis/<build>/    GENERATED per build
   disasm/<module>.asm     disassembly, same grouping
   pdb/                 llvm-pdbutil dumps (modules, publics, sources)
   map/                 parsed linker MAP
-  ghidra/              packed Ghidra project (.gzf, split into parts)
+  ghidra/              Ghidra exports + the saved Ghidra project (project.tar.gz, split into parts)
   logs/                pipeline logs
 records/             AUTHORED small facts; the only input to the graph
 src/ include/        AUTHORED reconstruction, mirroring the original source tree from the PDB

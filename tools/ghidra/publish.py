@@ -44,7 +44,7 @@ def group_of(va, pdb, mapobj):
     if m:
         lib = Path(m["lib"]).stem if m["lib"] else ""
         obj = Path(m["obj"]).stem
-        return safe(f"_lib/{lib}/{obj}" if lib else f"_obj/{obj}"), p
+        return safe((f"_lib/{lib}/{obj}" if lib else f"_obj/{obj}").lower()), p
     return "_unattributed", p
 
 

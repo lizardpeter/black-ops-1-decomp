@@ -38,6 +38,25 @@ def rel_source(path: str) -> str:
     return "<external>/" + p.replace("\\", "/")
 
 
+def make_canon(paths):
+    """One spelling per path, case-insensitively. The original tree mixes 'DW/', 'Dw/', 'dw/' (Windows
+    didn't care); a case-sensitive checkout would split them and a Windows checkout would collide.
+    Per path component, prefer a spelling with capitals, then the ASCII-first one: deterministic."""
+    spellings = {}
+    for path in paths:
+        parts = path.split("/")
+        for i in range(len(parts)):
+            spellings.setdefault("/".join(parts[:i + 1]).casefold(), set()).add(parts[i])
+    best = {k: min(v, key=lambda c: (c == c.lower(), c)) for k, v in spellings.items()}
+
+    def canon(path):
+        if not path:
+            return path
+        parts = path.split("/")
+        return "/".join(best["/".join(parts[:i + 1]).casefold()] for i in range(len(parts)))
+    return canon
+
+
 def pdbutil(*args) -> str:
     return subprocess.run(["llvm-pdbutil", *args], check=True, capture_output=True, text=True,
                           errors="replace").stdout
@@ -194,13 +213,18 @@ def main():
         [[s["index"], s.get("name", ""), f"{base + s['rva']:08X}", f"{s.get('vsize', 0):X}"] for s in secs])
 
     mods = parse_modules(dumps["modules"])
-    tsv(out / "pdb" / "modules.tsv", ["module", "obj", "lib", "source"],
-        [[m["index"], rel_source(m["obj"]), rel_source(m["lib"]), rel_source(m["source"])]
-         for m in sorted(mods.values(), key=lambda m: m["index"])])
-
     first_line = parse_lines(dumps["lines"], va_of)
     procs = parse_procs(dumps["symbols"], mods, va_of)
     procs.sort(key=lambda r: (r[0], r[2]))
+
+    canon = make_canon([rel_source(m[k]) for m in mods.values() for k in ("obj", "lib", "source")]
+                       + [p[5] for p in procs] + [s for s, _ in first_line.values()])
+    for p in procs:
+        p[5] = canon(p[5])
+    first_line = {va: (canon(s), ln) for va, (s, ln) in first_line.items()}
+    tsv(out / "pdb" / "modules.tsv", ["module", "obj", "lib", "source"],
+        [[m["index"], canon(rel_source(m["obj"])), canon(rel_source(m["lib"])), canon(rel_source(m["source"]))]
+         for m in sorted(mods.values(), key=lambda m: m["index"])])
     tsv(out / "pdb" / "functions.tsv", ["va", "size", "name", "scope", "module", "module_source", "line_source", "line", "type"],
         [[p[0], p[1], p[2], p[3], p[4], p[5], *first_line.get(p[0], ("", "")), p[6]] for p in procs])
     tsv(out / "pdb" / "lines.tsv", ["va", "source", "line"],

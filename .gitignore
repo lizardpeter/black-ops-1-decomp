@@ -3,7 +3,6 @@
 *.dll
 *.pdb
 *.gzf
-!analysis/*/ghidra/project.gzf.part-*
 
 # local scratch
 /build/
