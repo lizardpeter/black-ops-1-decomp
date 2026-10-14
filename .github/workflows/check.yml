@@ -1,0 +1,29 @@
+# Every push: the reconstruction compiles, every differential test passes, records/ only claims what
+# the tests prove, and the generated STATUS.md and graph import set are up to date.
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: |
+          sudo apt-get install -y -q clang lld llvm >/dev/null
+          pip install -q unicorn pefile
+      - name: Fetch original exe
+        run: python3 tools/fetch_originals.py CoDMPServer .work/originals
+      - name: Compile reconstruction
+        run: python3 tools/build_recon.py
+      - name: Differential tests
+        run: python3 tests/differential/run.py --check-records
+      - name: Generated files are current
+        run: |
+          python3 tools/status.py >/dev/null
+          python3 tools/graph/sync.py >/dev/null
+          git diff --exit-code -- STATUS.md analysis/graph || {
+            echo "::error::STATUS.md or analysis/graph is stale: run tools/status.py and tools/graph/sync.py"; exit 1; }

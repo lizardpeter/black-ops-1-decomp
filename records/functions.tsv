@@ -1,0 +1,10 @@
+build	va	status	src	note
+CoDMPServer	007A7F30	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A85F0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A8610	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A8770	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007AD780	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007AD880	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007AD980	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007ADD10	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007AF0E0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90

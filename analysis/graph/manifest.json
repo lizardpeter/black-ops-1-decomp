@@ -1,0 +1,36 @@
+{
+  "graph": "re_t5",
+  "schema": [
+    "CREATE INDEX FOR (n:Build) ON (n.id)",
+    "CREATE INDEX FOR (n:Subsystem) ON (n.name)",
+    "CREATE INDEX FOR (n:SourceFile) ON (n.path)",
+    "CREATE INDEX FOR (n:Function) ON (n.key)",
+    "CREATE INDEX FOR (n:FunctionInstance) ON (n.id)"
+  ],
+  "imports": [
+    {
+      "file": "t5/builds.jsonl",
+      "sha256": "f17c6aca36f0d6ccc52b3904f9a0f0b22f3ae0fc1ae07d24c81eedd389c5046b",
+      "rows": 2,
+      "cypher": "UNWIND {{ROWS}} AS r MERGE (b:Build {id:r.id}) SET b.timestamp=r.timestamp, b.exe_sha256=r.exe_sha256, b.pdb_guid=r.pdb_guid"
+    },
+    {
+      "file": "t5/sourcefiles.jsonl",
+      "sha256": "d78322bd4939103657c1b239b5ddf917902528279c64bd48cb277418cb5ec597",
+      "rows": 1058,
+      "cypher": "UNWIND {{ROWS}} AS r MERGE (s:Subsystem {name:r.subsystem}) MERGE (f:SourceFile {path:r.path}) MERGE (f)-[:PART_OF]->(s)"
+    },
+    {
+      "file": "t5/functions-CoDMPServer.jsonl",
+      "sha256": "dde16947b36ffce30e1f3278bef45db008cfabc3a8b18cb31206d3d848d0aadb",
+      "rows": 28427,
+      "cypher": "UNWIND {{ROWS}} AS r MATCH (b:Build {id:r.build}) MERGE (fn:Function {key:r.key}) SET fn.name = coalesce(fn.name, r.name), fn.symbol = r.symbol MERGE (fi:FunctionInstance {id:r.id}) SET fi.build=r.build, fi.va=r.va, fi.size=r.size, fi.status=r.status, fi.type=r.type, fi.src=r.src, fi.bytes_sha256=r.sha MERGE (fi)-[:INSTANCE_OF]->(fn) MERGE (fi)-[:IN_BUILD]->(b) WITH fn, r WHERE r.source <> '' MATCH (sf:SourceFile {path:r.source}) MERGE (fn)-[d:DEFINED_IN]->(sf) SET d.line=r.line"
+    },
+    {
+      "file": "t5/functions-CoDMPServer_s.jsonl",
+      "sha256": "bb551a93e9a1775c21895b5b4016e8216a1e2e703fc7f9440b7ee7f3a26fdc21",
+      "rows": 20546,
+      "cypher": "UNWIND {{ROWS}} AS r MATCH (b:Build {id:r.build}) MERGE (fn:Function {key:r.key}) SET fn.name = coalesce(fn.name, r.name), fn.symbol = r.symbol MERGE (fi:FunctionInstance {id:r.id}) SET fi.build=r.build, fi.va=r.va, fi.size=r.size, fi.status=r.status, fi.type=r.type, fi.src=r.src, fi.bytes_sha256=r.sha MERGE (fi)-[:INSTANCE_OF]->(fn) MERGE (fi)-[:IN_BUILD]->(b) WITH fn, r WHERE r.source <> '' MATCH (sf:SourceFile {path:r.source}) MERGE (fn)-[d:DEFINED_IN]->(sf) SET d.line=r.line"
+    }
+  ]
+}
