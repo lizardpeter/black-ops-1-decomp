@@ -13,7 +13,7 @@ import tomllib
 from pathlib import Path
 
 import pefile
-from unicorn import UC_ARCH_X86, UC_MODE_32, Uc, UcError
+from unicorn import UC_ARCH_X86, UC_HOOK_MEM_WRITE, UC_MODE_32, Uc, UcError
 from unicorn.x86_const import (UC_X86_REG_EAX, UC_X86_REG_EBP, UC_X86_REG_ESP, UC_X86_REG_FP0,
                                UC_X86_REG_FPSW)
 
@@ -73,11 +73,29 @@ class Machine:
         self.mu.mem_map(STACK, STACK_SIZE)
         self.mu.mem_map(HEAP, HEAP_SIZE)
         self.mu.mem_map(SENTINEL, 0x1000)
+        # Writes into any mapped image (the original's globals) are journaled so each call can be
+        # rolled back and its side effects compared: see call().
+        self.images = images
+        self._journal = {}
+        self.mu.hook_add(UC_HOOK_MEM_WRITE, self._on_write)
+
+    def _on_write(self, mu, access, address, size, value, user):
+        for img in self.images:
+            if img.base <= address < img.base + img.size:
+                for a in range(address, address + size):
+                    if a not in self._journal:
+                        self._journal[a] = bytes(mu.mem_read(a, 1))
+                return
+
+    def poke(self, va, data: bytes):
+        self.mu.mem_write(va, data)
 
     def call(self, va, args, ret="int"):
         """args: ints, floats ('f', x), or bytes (passed by pointer, read back after).
 
-        Returns (return value, [buffer contents after the call])."""
+        Returns (return value, [buffer contents after the call], {address: byte} written in mapped
+        images). Image writes are rolled back afterwards, so calls never see each other's state.
+        A crash returns ("fault: ...", [], writes)."""
         mu = self.mu
         mu.mem_write(HEAP, b"\0" * HEAP_SIZE)
         heap = HEAP
@@ -90,6 +108,8 @@ class Machine:
                 heap += _page(len(a) + 16)
             elif isinstance(a, tuple) and a[0] == "f":
                 words.append(struct.unpack("<I", struct.pack("<f", a[1]))[0])
+            elif isinstance(a, tuple) and a[0] == "d":
+                words.extend(struct.unpack("<II", struct.pack("<d", a[1])))
             else:
                 words.append(a & 0xFFFFFFFF)
         sp = STACK + STACK_SIZE - 0x100
@@ -101,14 +121,23 @@ class Machine:
         mu.reg_write(UC_X86_REG_ESP, sp)
         mu.reg_write(UC_X86_REG_EBP, 0)
         mu.reg_write(UC_X86_REG_FPSW, 0)
+        self._journal = {}
         try:
             mu.emu_start(va, SENTINEL, count=1_000_000)
+            fault = None
         except UcError as e:
-            raise RuntimeError(f"emulation fault in {va:08X}: {e}") from None
+            fault = f"fault: {e}"
+        # side effects on globals: final bytes of every written address, then roll back
+        globals_written = {a: bytes(mu.mem_read(a, 1)) for a in sorted(self._journal)}
+        for a, old in self._journal.items():
+            mu.mem_write(a, old)
+        self._journal = {}
+        if fault:
+            return fault, [], globals_written
         eax = mu.reg_read(UC_X86_REG_EAX)
         value = {"int": eax if eax < 1 << 31 else eax - (1 << 32),
                  "char": struct.unpack("<b", bytes([eax & 0xFF]))[0],
                  "short": struct.unpack("<h", struct.pack("<H", eax & 0xFFFF))[0],
                  "float": _st0(mu) if ret == "float" else None,
                  "void": None}[ret]
-        return value, [bytes(mu.mem_read(a, n)) for a, n in bufs]
+        return value, [bytes(mu.mem_read(a, n)) for a, n in bufs], globals_written

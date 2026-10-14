@@ -18,6 +18,7 @@ struct cplane_s
 int RandWithSeed(int *seed);
 signed char ClampChar(const int i);
 short ClampShort(const int i);
+float vectoyaw(const float vec[2]);
 int VecNCompareCustomEpsilon(const float v0[], const float v1[], float epsilon, int coordCount);
 
 extern "C" void ClearBounds(float mins[3], float maxs[3]);  // unmangled in the original: _ClearBounds

@@ -5,6 +5,8 @@
 // Status of every function lives in records/functions.tsv.
 #include "universal/com_math.h"
 
+#include <math.h>
+
 // 007A7F30  com_math.cpp:190
 int RandWithSeed(int *seed)
 {
@@ -43,6 +45,23 @@ int VecNCompareCustomEpsilon(const float v0[], const float v1[], float epsilon, 
 			return 0;
 	}
 	return 1;
+}
+
+// 007A8D40  com_math.cpp:826
+float vectoyaw(const float vec[2])
+{
+	float yaw;
+
+	if (vec[1] == 0.0f && vec[0] == 0.0f)
+	{
+		yaw = 0.0f;
+	}
+	else
+	{
+		yaw = atan2f(vec[1], vec[0]) * 180.0f / 3.14159265f;
+		yaw += yaw < 0.0f ? 360.0f : 0.0f;  // always adds: turns -0 into +0, as the original does
+	}
+	return yaw;
 }
 
 // 007AD780  com_math.cpp:2533
